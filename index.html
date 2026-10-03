@@ -521,9 +521,7 @@ document.querySelectorAll("[data-check]").forEach(e=>e.onclick=()=>{audit.checks
 function renderFollowups(){
 let t=document.getElementById("tableauFollow");
 if(t){
-if(audit.data.place==="Oui"){
 t.innerHTML=`<div class="item"><b>📷 Photo du tableau</b><p>Prendre une photo puis l’annoter.</p>${photos("tableau")}</div>`;
-}else t.innerHTML="";
 }
 let c=document.getElementById("cheminementFollow");
 if(c)c.innerHTML=`<div class="item"><b>📷 Photos du cheminement</b><p>Ajouter autant de photos que nécessaire et les annoter.</p>${photos("cheminement")}</div>`;
