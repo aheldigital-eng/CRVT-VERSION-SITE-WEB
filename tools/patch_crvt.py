@@ -107,3 +107,4 @@ if 'PLACE DISPONIBLE DANS LE TABLEAU' in s:
 
 p.write_text(s, encoding='utf-8')
 print('CRVT patch applied safely:', len(s), 'bytes; pdf answer removed=', removed_answer, 'fallback removed=', removed_fallback)
+# 2026-10-04: trigger validated publication of the minimal tableau cleanup only.
