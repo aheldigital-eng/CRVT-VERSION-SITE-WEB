@@ -1,35 +1,69 @@
 import re
 from pathlib import Path
-p=Path('index.html')
-s=p.read_text(encoding='utf-8')
 
-# Remove the obsolete tableau availability question, without touching photo controls.
-s,nq=re.subn(r'tableau:\[\s*\["place","Place disponible dans le tableau \?","select:Oui\|Non"\]\s*\],','tableau:[],',s,count=1)
+p = Path('index.html')
+s = p.read_text(encoding='utf-8')
 
-# Replace only the conditional wrapper around the existing tableau photo block.
-pat=re.compile(r'if\(audit\.data\.place===("\')Oui\1\)\{\s*'
-              r't\.innerHTML=`<div class="item"><b>📷 Photo du tableau</b><p>Prendre une photo puis l’annoter\.</p>\$\{photos\("tableau"\)\}</div>`;\s*'
-              r'\}else if\(audit\.data\.place===("\')Non\2\)\{\s*'
-              r't\.innerHTML=`<div class="item"><b>⚠️ Prévoir un tableau supplémentaire</b><p>Ajouter une photo du tableau existant et l’annoter\.</p>\$\{photos\("tableau"\)\}</div>`;\s*'
-              r'\}else t\.innerHTML="";')
-replacement='t.innerHTML=`<div class="item"><b>📷 Photo du tableau</b><p>Prendre une photo puis l’annoter.</p>${photos("tableau")}</div>`;'
-s,nui=pat.subn(replacement,s,count=1)
+# 1) Remove ONLY the obsolete "Place disponible dans le tableau ?" field.
+s, nq = re.subn(
+    r'tableau:\[\s*\["place","Place disponible dans le tableau \?","select:Oui\|Non"\]\s*\],',
+    'tableau:[],',
+    s,
+    count=1,
+)
 
-# Remove the obsolete PDF answer tied to the deleted question.
-pdf_pat=re.compile(r'\n\s*\$\{first\?`<div class="bigAnswer"><span>PLACE DISPONIBLE DANS LE TABLEAU</span><b>\$\{esc\(place\|\|"Non renseigné"\)\}</b></div>\s*\$\{place==="Non"\?`<div class="recommendation"><b>TABLEAU SUPPLÉMENTAIRE À PRÉVOIR</b>.*?`:\"\"\}`:\"\"\}\n\s*\$\{block\.html\}',re.S)
-s,npdf=pdf_pat.subn('\n    ${block.html}',s,count=1)
+# 2) Remove ONLY the obsolete warning card. Do NOT touch the working tableau photo card.
+warning_pat = re.compile(
+    r'<div class="item"><b>⚠️ Prévoir un tableau supplémentaire</b>'
+    r'<p>Ajouter une photo du tableau existant et l’annoter\.</p>'
+    r'\$\{photos\("tableau"\)\}</div>',
+    re.S,
+)
+s, nw = warning_pat.subn('', s, count=1)
 
-# Remove the old empty-table fallback page which existed only for the deleted question.
-fallback=re.compile(r'\n\s*if\(!blocks\.length\)\{\s*pages\.push\(`[^`]*?PLACE DISPONIBLE DANS LE TABLEAU.*?`\);\s*\}',re.S)
-s,nfb=fallback.subn('',s,count=1)
+# If the warning card is wrapped in the old place===Non conditional, remove only that
+# conditional branch while preserving the preceding working photo branch.
+branch_pat = re.compile(
+    r'else if\(audit\.data\.place===(["\'])Non\1\)\{\s*'
+    r't\.innerHTML=`<div class="item"><b>⚠️ Prévoir un tableau supplémentaire</b>'
+    r'<p>Ajouter une photo du tableau existant et l’annoter\.</p>'
+    r'\$\{photos\("tableau"\)\}</div>`;\s*\}',
+    re.S,
+)
+s, nb = branch_pat.subn('', s, count=1)
 
-# Safety: never publish if the photo system was removed or the obsolete block remains.
-if 'Place disponible dans le tableau ?' in s or 'Prévoir un tableau supplémentaire' in s or 'PLACE DISPONIBLE DANS LE TABLEAU' in s:
-    raise SystemExit('SAFETY STOP: obsolete tableau text remains')
+# Remove a leftover empty else attached to the deleted availability question only.
+s = re.sub(r'else\s*t\.innerHTML="";', '', s, count=1)
+
+# 3) Remove the obsolete PDF answer/recommendation for the deleted question.
+pdf_pat = re.compile(
+    r'\$\{first\?`<div class="bigAnswer"><span>PLACE DISPONIBLE DANS LE TABLEAU</span>'
+    r'<b>\$\{esc\(place\|\|"Non renseigné"\)\}</b></div>\s*'
+    r'\$\{place==="Non"\?`<div class="recommendation"><b>TABLEAU SUPPLÉMENTAIRE À PRÉVOIR</b>.*?`:\"\"\}`:\"\"\}',
+    re.S,
+)
+s, npdf = pdf_pat.subn('', s, count=1)
+
+# Fallback page that existed only for the deleted question: remove the whole push block.
+fallback_pat = re.compile(
+    r'\n\s*if\(!blocks\.length\)\{\s*pages\.push\(`[^`]*?PLACE DISPONIBLE DANS LE TABLEAU.*?`\);\s*\}',
+    re.S,
+)
+s, nfb = fallback_pat.subn('', s, count=1)
+
+# 4) Safety checks. The working photo system MUST remain.
 if 'photos("tableau")' not in s:
     raise SystemExit('SAFETY STOP: tableau photo system disappeared')
-if nui != 1:
-    raise SystemExit(f'SAFETY STOP: tableau photo block replacement count={nui}')
+if 'Place disponible dans le tableau ?' in s:
+    raise SystemExit('SAFETY STOP: obsolete place question remains')
+if 'Prévoir un tableau supplémentaire' in s:
+    raise SystemExit('SAFETY STOP: obsolete warning remains')
+if 'PLACE DISPONIBLE DANS LE TABLEAU' in s:
+    raise SystemExit('SAFETY STOP: obsolete PDF block remains')
 
-p.write_text(s,encoding='utf-8')
-print(f'OK nq={nq} ui={nui} pdf={npdf} fallback={nfb} bytes={len(s)}')
+# The photo card itself must still exist after cleanup.
+if 'Photo du tableau' not in s:
+    raise SystemExit('SAFETY STOP: tableau photo card disappeared')
+
+p.write_text(s, encoding='utf-8')
+print(f'OK nq={nq} warning={nw} branch={nb} pdf={npdf} fallback={nfb} bytes={len(s)}')
