@@ -27,8 +27,7 @@ label{display:block;font-weight:700;margin:9px 0 5px}input,select,textarea{width
 .quickNavBtn.active{background:#0b6e9e;color:#fff;border-color:#0b6e9e}.quickNavCount{display:inline-flex;min-width:18px;height:18px;padding:0 5px;align-items:center;justify-content:center;margin-left:5px;border-radius:999px;background:#e2e8f0;color:#334155;font-size:10px;font-weight:900}.quickNavBtn.active .quickNavCount{background:#fff;color:#0b6e9e}.quickNavBtn[data-empty="true"]{opacity:.62}.quickNavStatus{display:inline-flex;align-items:center;justify-content:center;margin-left:5px;font-size:12px;font-weight:900}.quickNavBtn[data-state="ok"] .quickNavStatus{color:#16a34a}.quickNavBtn[data-state="warn"] .quickNavStatus{color:#dc2626}.quickNavBtn.active[data-state="ok"] .quickNavStatus,.quickNavBtn.active[data-state="warn"] .quickNavStatus{color:inherit}.quickNavBtn[data-active="true"]{box-shadow:0 0 0 2px #7dd3fc55}
 @media print{#quickNav{display:none!important}}
 .nav{display:flex;gap:8px;position:sticky;bottom:0;background:#f1f5f9;padding:9px 0;z-index:15}.nav button{flex:1}
-.modal{position:fixed;inset:0;background:#000d;z-index:2147483640;padding:0}.modalbox{height:100%;display:flex;flex-direction:column;gap:0;background:#eef4f7}.canvaswrap{background:#fff;flex:1;border-radius:0;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:0}.canvaswrap canvas{display:block;width:auto!important;height:auto!important;max-width:100%;max-height:100%;touch-action:none;object-fit:contain}
-.crvtAnnotModal{position:fixed;inset:0;z-index:2147483647;background:rgba(5,18,28,.88);display:flex;align-items:stretch;justify-content:center;padding:0;box-sizing:border-box}.crvtAnnotBox{width:100%;height:100%;display:flex;flex-direction:column;background:#f4f7fa;color:#172433;overflow:hidden}.crvtAnnotHead{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:linear-gradient(135deg,#081b2c,#0b496b 55%,#13a9b8);color:#fff;box-shadow:0 3px 12px #0004}.crvtAnnotHead>div{display:flex;align-items:center;gap:10px;font-size:18px}.crvtAnnotHead span{font-size:11px;background:#ffffff22;border:1px solid #ffffff44;border-radius:999px;padding:4px 8px}.crvtAnnotClose{border:0;background:#ffffff18;color:#fff;font-size:25px;width:42px;height:42px;border-radius:12px}.crvtAnnotTools{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;align-items:stretch;padding:9px;background:#fff;border-bottom:1px solid #dbe5ec;box-shadow:0 3px 12px #0002}.crvtAnnotTools .crvtAT,.crvtAnnotTools .crvtASelect{width:100%;min-width:0}.crvtAT,.crvtASelect{flex:0 0 auto;min-height:44px;border:1px solid #d3e0e8;border-radius:12px;background:#fff;color:#243746;padding:9px 12px;font-size:14px;font-weight:800;box-shadow:0 2px 5px #0f172a12}.crvtAT.active{background:#0b6e9e;color:#fff;border-color:#0b6e9e}.crvtASelect{min-width:112px}.crvtAnnotCanvas{flex:1;min-height:0;background:#1a1f23;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px}.crvtAnnotCanvas canvas{display:block;max-width:100%;max-height:100%;width:auto;height:auto;touch-action:none;box-shadow:0 5px 22px #0008}.crvtAnnotFoot{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #dbe5ec}.crvtAnnotFoot span{font-size:12px;color:#64748b}.crvtCancel,.crvtSave{border:0;border-radius:12px;padding:12px 15px;font-size:14px;font-weight:900}.crvtCancel{background:#ef3340;color:#fff}.crvtSave{background:#0b6e9e;color:#fff;margin-left:7px}@media(max-width:620px){.crvtAnnotHead>div{font-size:16px}.crvtAnnotTools{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:7px}.crvtAT,.crvtASelect{font-size:12px;padding:8px 4px;min-height:42px;border-radius:10px}.crvtAnnotFoot{align-items:stretch}.crvtAnnotFoot span{display:none}.crvtAnnotFoot>div{width:100%;display:flex}.crvtCancel,.crvtSave{flex:1}}
+.modal{position:fixed;inset:0;background:#000d;z-index:100;padding:8px}.modalbox{height:100%;display:flex;flex-direction:column;gap:8px}.canvaswrap{background:#fff;flex:1;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:0}.canvaswrap canvas{display:block;width:auto!important;height:auto!important;max-width:100%;max-height:100%;touch-action:none;object-fit:contain}
 .tools{display:flex;gap:6px;flex-wrap:wrap}.tools .btn{flex:none}
 .historyMeta{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}.statusBadge{display:inline-block;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:800;background:#e2e8f0;color:#334155}.statusBadge.done{background:#dcfce7;color:#166534}.draftBar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 12px;border:1px solid #dbe4ec;background:#f8fafc;border-radius:11px;margin-bottom:10px}.smallMuted{font-size:12px;color:#64748b}.saveState{font-weight:700;color:#166534}.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 14px;border-radius:9px;z-index:200}
 @media(max-width:620px){.grid{grid-template-columns:1fr}.photoGrid{grid-template-columns:1fr}.choice{grid-template-columns:1fr 1fr 1fr}}
@@ -162,7 +161,6 @@ body{padding-top:var(--header-h,0px) !important;}
 #quickNav{position:sticky !important;top:var(--header-h,0px) !important;z-index:150 !important;}
 @media print{body{padding-top:0 !important;}header{position:static !important;display:none !important;}#quickNav{display:none !important;}}
 
-</style>
 <style id="crvt-v19-max-design">
 :root{
   --crvt-accent:#14a7b8;--crvt-accent2:#0b6e9e;--crvt-ink:#102536;--crvt-soft:#f4f9fb;
@@ -204,6 +202,7 @@ header{position:fixed !important;top:0 !important;left:0 !important;right:0 !imp
 .quickNavInner{overscroll-behavior-x:contain;touch-action:pan-x;overflow-x:auto;overflow-y:hidden;}
 @media print{body{padding-top:0 !important;}header{position:static !important;display:none !important;}#quickNav{display:none !important;}}
 </style>
+</style>
 <style>
 /* V20 — outils pro terrain */
 .v20Tools{border:1px solid #d7e8ef;background:linear-gradient(180deg,#fff,#f6fbfd);box-shadow:0 12px 35px rgba(15,83,112,.10)}
@@ -238,10 +237,12 @@ const ENSIO_LOGO='ensio-logo-transparent.png';
 const common=[
 ["puissance","Puissance souscrite","select:3 kVA|6 kVA|9 kVA|12 kVA|15 kVA|18 kVA|24 kVA|36 kVA|Autre"],["compteur","Type de Compteur","select:Monophasé|Triphasé|Autre"],
 ["divisionnaire","Installation d’un tableau divisionnaire","select:Oui|Non"],["typeborne","Type de borne","select:Monophasé|Triphasé|Autre"],
-["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"],["longueurCable","Mesure du cheminement (m)","number"],["typeCable","Type de câble","select:3G10|5G10"],["cableCommunication","Câble de communication","select:Oui|Non"]
+["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"]
 ];
 const modules={
-tableau:[],
+tableau:[
+["place","Place disponible dans le tableau ?","select:Oui|Non"]
+],
 cheminement:[
 ["passage","Type de passage","select:Apparent|Vide sanitaire|Combles|Faux plafond|Autre"],
 ["protection","Type de passage / protection du câble","select:Tube IRL|Fourreau en tranchée|Goulotte intérieure|Autre"]
@@ -401,10 +402,10 @@ function updateQuickNav(){
   const photoCount=key=>(audit.photos?.[key]||[]).length;
   const stateFor=key=>{
     if(key==="general") return audit.client.trim()&&audit.date&&audit.auditeur.trim()?"ok":"warn";
-    if(key==="infos") return audit.data.commentaire||audit.data.puissance||audit.data.compteur||audit.data.borne||audit.data.environnement||audit.data.position||audit.data.longueurCable||audit.data.typeCable||audit.data.cableCommunication?"ok":"warn";
+    if(key==="infos") return audit.data.commentaire||audit.data.place||audit.data.puissance||audit.data.compteur||audit.data.borne||audit.data.environnement||audit.data.position?"ok":"warn";
     if(key==="modules") return Object.values(audit.sections).some(Boolean)?"ok":"warn";
     if(key==="synthese") return validateAudit().some(x=>x.type==="error")?"warn":"ok";
-     if(key==="tableau") return !audit.sections.tableau?"warn":(photoCount("tableau")?"ok":"warn");
+     if(key==="tableau") return !audit.sections.tableau?"warn":(audit.data.place && photoCount("tableau")?"ok":"warn");
     if(key==="cheminement") return !audit.sections.cheminement?"warn":(audit.data.passage&&audit.data.protection&&photoCount("cheminement")?"ok":"warn");
     if(key==="borne") return !audit.sections.borne?"warn":(photoCount("borne")?"ok":"warn");
     if(key==="actions") return "ok";
@@ -506,7 +507,7 @@ audit.data[e.dataset.field]=e.value;
 if(audit.status==="Terminé") audit.status="Brouillon";
 save();
 if(e.dataset.hasOther==="true"){let w=document.getElementById(e.dataset.field+"OtherWrap");if(w)w.style.display=e.value==="Autre"?"block":"none";}
-if(["passage","protection"].includes(e.dataset.field)) renderFollowups();
+if(["place","passage","protection"].includes(e.dataset.field)) renderFollowups();
 });
 bindPhotoInputs();
 bindCaptionInputs();
@@ -521,7 +522,11 @@ document.querySelectorAll("[data-check]").forEach(e=>e.onclick=()=>{audit.checks
 function renderFollowups(){
 let t=document.getElementById("tableauFollow");
 if(t){
+if(audit.data.place==="Oui"){
 t.innerHTML=`<div class="item"><b>📷 Photo du tableau</b><p>Prendre une photo puis l’annoter.</p>${photos("tableau")}</div>`;
+}else if(audit.data.place==="Non"){
+t.innerHTML=`<div class="item"><b>⚠️ Prévoir un tableau supplémentaire</b><p>Ajouter une photo du tableau existant et l’annoter.</p>${photos("tableau")}</div>`;
+}else t.innerHTML="";
 }
 let c=document.getElementById("cheminementFollow");
 if(c)c.innerHTML=`<div class="item"><b>📷 Photos du cheminement</b><p>Ajouter autant de photos que nécessaire et les annoter.</p>${photos("cheminement")}</div>`;
@@ -962,122 +967,172 @@ function annotate(sec,i){
   if(!photo.annotations) photo.annotations=[];
   if(!photo.baseData) photo.baseData=photo.data;
 
+  /* CRVT — nouvel éditeur d'annotations intégré.
+     Aucun bandeau de navigation du CRVT n'est utilisé dans cette fenêtre.
+     La fenêtre est placée directement sous <body> et prend tout l'écran. */
   const m=document.createElement("div");
-  m.className="crvtAnnotModal";
+  m.className="crvt-annotation-modal";
   m.innerHTML=`
-    <div class="crvtAnnotBox">
-      <div class="crvtAnnotHead">
-        <div><b>📷 Annoter la photo</b><span>CRVT</span></div>
-        <button class="crvtAnnotClose" id="cancelTop" type="button">✕</button>
-      </div>
-      <div class="crvtAnnotTools">
-        <button class="crvtAT active" id="select" type="button">↖️ Sélection</button>
-        <button class="crvtAT" id="pen" type="button">✏️ Dessin</button>
-        <button class="crvtAT" id="arrow" type="button">↗️ Flèche</button>
-        <button class="crvtAT" id="line" type="button">／ Ligne</button>
-        <button class="crvtAT" id="circle" type="button">⭕ Cercle</button>
-        <button class="crvtAT" id="rect" type="button">▭ Rectangle</button>
-        <button class="crvtAT" id="text" type="button">T Texte</button>
-        <button class="crvtAT" id="rotateLeft" type="button">↶ 15°</button>
-        <button class="crvtAT" id="rotateRight" type="button">↷ 15°</button>
-        <select id="strokeStyle" class="crvtASelect"><option value="solid">━ Plein</option><option value="dashed">╌ Pointillé</option></select>
-        <select id="color" class="crvtASelect"><option value="#e11d48">🔴 Rouge</option><option value="#2563eb">🔵 Bleu</option><option value="#16a34a">🟢 Vert</option><option value="#f59e0b">🟠 Orange</option><option value="#000000">⚫ Noir</option><option value="#ffffff">⚪ Blanc</option></select>
-        <button class="crvtAT" id="undo" type="button">↶ Annuler</button>
-        <button class="crvtAT" id="redo" type="button">↷ Rétablir</button>
-        <button class="crvtAT" id="deleteSelected" type="button">🗑️ Supprimer</button>
-        <button class="crvtAT" id="shrinkSelected" type="button">➖ Réduire</button>
-        <button class="crvtAT" id="growSelected" type="button">➕ Agrandir</button>
-        <button class="crvtAT" id="clear" type="button">🧹 Tout effacer</button>
-      </div>
-      <div class="crvtAnnotCanvas"><canvas></canvas></div>
-      <div class="crvtAnnotFoot">
-        <span>Choisis un outil puis dessine directement sur la photo.</span>
-        <div><button class="crvtCancel" id="cancel" type="button">✕ Annuler</button><button class="crvtSave" id="done" type="button">💾 Enregistrer</button></div>
-      </div>
-    </div>`;
+  <div class="crvt-annotation-box" role="dialog" aria-modal="true" aria-label="Annoter la photo">
+    <div class="crvt-annotation-head">
+      <div class="crvt-annotation-title">📷 Annoter la photo</div>
+      <button type="button" class="crvt-icon-close" id="closeAnnot" aria-label="Fermer">✕</button>
+    </div>
+
+    <div class="crvt-annotation-toolbar">
+      <button type="button" class="crvt-tool active" id="select">↖️<span>Sélection</span></button>
+      <button type="button" class="crvt-tool" id="pen">✏️<span>Dessin</span></button>
+      <button type="button" class="crvt-tool" id="arrow">↗️<span>Flèche</span></button>
+      <button type="button" class="crvt-tool" id="line">╱<span>Ligne</span></button>
+      <button type="button" class="crvt-tool" id="circle">⭕<span>Cercle</span></button>
+      <button type="button" class="crvt-tool" id="rect">▭<span>Rectangle</span></button>
+      <button type="button" class="crvt-tool" id="text">T<span>Texte</span></button>
+
+      <label class="crvt-control"><span>Trait</span><select id="strokeStyle"><option value="solid">━ Plein</option><option value="dashed">╌ Pointillé</option></select></label>
+      <label class="crvt-control"><span>Couleur</span><select id="color"><option value="#e11d48">🔴 Rouge</option><option value="#2563eb">🔵 Bleu</option><option value="#16a34a">🟢 Vert</option><option value="#f59e0b">🟠 Orange</option><option value="#000000">⚫ Noir</option><option value="#ffffff">⚪ Blanc</option></select></label>
+
+      <button type="button" class="crvt-tool" id="rotateLeft">↶<span>15°</span></button>
+      <button type="button" class="crvt-tool" id="rotateRight">↷<span>15°</span></button>
+      <button type="button" class="crvt-tool" id="undo">↶<span>Annuler</span></button>
+      <button type="button" class="crvt-tool" id="redo">↷<span>Rétablir</span></button>
+      <button type="button" class="crvt-tool" id="deleteSelected">🗑️<span>Supprimer</span></button>
+      <button type="button" class="crvt-tool" id="shrinkSelected">➖<span>Réduire</span></button>
+      <button type="button" class="crvt-tool" id="growSelected">➕<span>Agrandir</span></button>
+      <button type="button" class="crvt-tool" id="clear">🧹<span>Tout effacer</span></button>
+    </div>
+
+    <div class="crvt-annotation-stage"><canvas></canvas></div>
+    <div class="crvt-annotation-help">Sélectionnez une annotation pour la déplacer, la supprimer, la redimensionner ou la faire pivoter.</div>
+    <div class="crvt-annotation-actions">
+      <button type="button" class="crvt-action cancel" id="cancel">✕ Annuler</button>
+      <button type="button" class="crvt-action save" id="done">💾 Enregistrer</button>
+    </div>
+  </div>`;
   document.body.appendChild(m);
+  document.documentElement.classList.add("crvt-annotation-open");
+  document.body.classList.add("crvt-annotation-open");
+
+  const style=document.createElement("style");
+  style.id="crvt-annotation-style";
+  style.textContent=`
+  html.crvt-annotation-open,body.crvt-annotation-open{overflow:hidden!important}
+  .crvt-annotation-modal{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;z-index:2147483647!important;background:rgba(3,15,27,.88)!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:10px!important;box-sizing:border-box!important;overscroll-behavior:none!important}
+  .crvt-annotation-box{width:min(920px,100%);height:min(96dvh,900px);background:#f4f7fa;border-radius:18px;box-shadow:0 20px 70px rgba(0,0,0,.45);display:grid;grid-template-rows:auto auto minmax(0,1fr) auto auto;gap:8px;padding:10px;box-sizing:border-box;overflow:hidden;font-family:Arial,Helvetica,sans-serif}
+  .crvt-annotation-head{display:flex;align-items:center;justify-content:space-between;min-height:42px;background:linear-gradient(135deg,#0b1f33,#0b6e9e,#13a9b8);color:#fff;border-radius:12px;padding:7px 10px;box-sizing:border-box}
+  .crvt-annotation-title{font-weight:900;font-size:16px}.crvt-icon-close{width:40px;height:40px;border:0;border-radius:10px;background:rgba(255,255,255,.18);color:#fff;font-size:22px;font-weight:900;cursor:pointer;touch-action:manipulation}
+  .crvt-annotation-toolbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;max-height:35dvh;overflow:auto;padding:4px;background:#fff;border:1px solid #dbe5ec;border-radius:13px;box-sizing:border-box;align-content:start;-webkit-overflow-scrolling:touch}
+  .crvt-tool,.crvt-control{min-width:0;min-height:48px;border:1px solid #d4e0e7;border-radius:11px;background:#f8fbfc;color:#173247;font-weight:800;font-size:11px;line-height:1.05;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;padding:4px;box-sizing:border-box;cursor:pointer;touch-action:manipulation}
+  .crvt-tool{font-size:20px}.crvt-tool span{font-size:10px}.crvt-tool.active{background:linear-gradient(135deg,#0b6e9e,#13a7b8);color:#fff;border-color:#0b6e9e}
+  .crvt-control{font-size:10px;cursor:default}.crvt-control span{font-size:9px;text-transform:uppercase;letter-spacing:.4px}.crvt-control select{width:100%;min-width:0;height:29px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#173247;font-weight:800;font-size:10px;padding:2px}
+  .crvt-annotation-stage{position:relative;min-height:0;overflow:auto;background:#fff;border:1px solid #dbe5ec;border-radius:13px;display:flex;align-items:center;justify-content:center;padding:6px;box-sizing:border-box;-webkit-overflow-scrolling:touch}
+  .crvt-annotation-stage canvas{display:block;max-width:100%;max-height:100%;width:auto;height:auto;background:#fff;touch-action:none;user-select:none;-webkit-user-select:none;flex:0 0 auto}
+  .crvt-annotation-help{font-size:10px;color:#53616c;background:#eef7fa;border:1px solid #dbe5ec;border-radius:8px;padding:6px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .crvt-annotation-actions{display:grid;grid-template-columns:1fr 1.4fr;gap:8px}.crvt-action{min-height:48px;border:0;border-radius:11px;font-size:14px;font-weight:900;cursor:pointer;touch-action:manipulation}.crvt-action.cancel{background:#dc2626;color:#fff}.crvt-action.save{background:#0b6e9e;color:#fff}
+  @media(max-width:600px){.crvt-annotation-modal{padding:4px}.crvt-annotation-box{height:98dvh;border-radius:13px;padding:6px;gap:6px}.crvt-annotation-head{min-height:38px}.crvt-annotation-title{font-size:14px}.crvt-icon-close{width:36px;height:36px}.crvt-annotation-toolbar{grid-template-columns:repeat(4,minmax(0,1fr));max-height:32dvh;gap:5px;padding:3px}.crvt-tool,.crvt-control{min-height:44px}.crvt-tool{font-size:18px}.crvt-tool span{font-size:9px}.crvt-annotation-help{font-size:9px}.crvt-action{min-height:46px;font-size:13px}}
+  `;
+  document.head.appendChild(style);
 
   const c=m.querySelector("canvas"),ctx=c.getContext("2d"),img=new Image();
   let objects=JSON.parse(JSON.stringify(photo.annotations||[]));
-  let tool="select",color="#e11d48",strokeStyle="solid",drawing=null,selected=-1,drag=null;
+  let tool="select",color="#e11d48",strokeStyle="solid",drawing=null,drawingBefore=null,selected=-1,drag=null;
   let undoStack=[],redoStack=[];
-  const snapshot=()=>JSON.parse(JSON.stringify(objects));
-  const commit=before=>{undoStack.push(before);if(undoStack.length>50)undoStack.shift();redoStack=[]};
-  const undo=()=>{if(!undoStack.length){toast("Aucune action à annuler");return}redoStack.push(snapshot());objects=undoStack.pop();selected=-1;drag=drawing=null;draw()};
-  const redo=()=>{if(!redoStack.length){toast("Aucune action à rétablir");return}undoStack.push(snapshot());objects=redoStack.pop();selected=-1;drag=drawing=null;draw()};
 
-  img.onload=()=>{
-    const box=c.parentElement.getBoundingClientRect();
-    const s=Math.min((box.width-8)/img.naturalWidth,(box.height-8)/img.naturalHeight,1);
+  function snapshot(){return JSON.parse(JSON.stringify(objects));}
+  function commit(before){undoStack.push(before);if(undoStack.length>50)undoStack.shift();redoStack=[];}
+  function undo(){if(!undoStack.length){toast("Aucune action à annuler");return}redoStack.push(snapshot());objects=undoStack.pop();selected=-1;drag=null;drawing=null;draw()}
+  function redo(){if(!redoStack.length){toast("Aucune action à rétablir");return}undoStack.push(snapshot());objects=redoStack.pop();selected=-1;drag=null;drawing=null;draw()}
+
+  function fitCanvas(){
+    if(!img.naturalWidth||!img.naturalHeight)return;
+    const r=m.querySelector(".crvt-annotation-stage").getBoundingClientRect();
+    const maxW=Math.max(1,r.width-12),maxH=Math.max(1,r.height-12);
+    const s=Math.min(maxW/img.naturalWidth,maxH/img.naturalHeight,1);
     c.width=Math.max(1,Math.round(img.naturalWidth*s));
     c.height=Math.max(1,Math.round(img.naturalHeight*s));
     draw();
-  };
+  }
+  img.onload=()=>{fitCanvas();setTimeout(fitCanvas,80)};
   img.src=src;
 
   function pt(e){const r=c.getBoundingClientRect();return{x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height}}
   function rotPoint(x,y,cx,cy,a){const dx=x-cx,dy=y-cy;return{x:cx+dx*Math.cos(a)-dy*Math.sin(a),y:cy+dx*Math.sin(a)+dy*Math.cos(a)}}
   function bounds(o){
-    const pts=o.type==="pen"?(o.points||[]):[{x:o.x||0,y:o.y||0},{x:o.x2??o.x??0,y:o.y2??o.y??0}];
-    if(!pts.length)return{cx:0,cy:0,minx:0,maxx:0,miny:0,maxy:0};
-    const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);const minx=Math.min(...xs),maxx=Math.max(...xs),miny=Math.min(...ys),maxy=Math.max(...ys);
+    let pts=o.type==="pen"?(o.points||[]):[{x:o.x||0,y:o.y||0},{x:o.x2??o.x??0,y:o.y2??o.y??0}];
+    if(!pts.length)pts=[{x:0,y:0}];
+    const minx=Math.min(...pts.map(p=>p.x)),maxx=Math.max(...pts.map(p=>p.x)),miny=Math.min(...pts.map(p=>p.y)),maxy=Math.max(...pts.map(p=>p.y));
     return{cx:(minx+maxx)/2,cy:(miny+maxy)/2,minx,maxx,miny,maxy};
   }
   function hit(o,p){
     const b=bounds(o),q=rotPoint(p.x,p.y,b.cx,b.cy,-(o.rot||0));
-    if(o.type==="pen"){
-      const pts=o.points||[];for(let j=1;j<pts.length;j++){const a=pts[j-1],z=pts[j],dx=z.x-a.x,dy=z.y-a.y,len2=dx*dx+dy*dy,u=len2?Math.max(0,Math.min(1,((q.x-a.x)*dx+(q.y-a.y)*dy)/len2)):0,x=a.x+u*dx,y=a.y+u*dy;if(Math.hypot(q.x-x,q.y-y)<=18)return true}return false;
-    }
+    if(o.type==="pen"){const pts=o.points||[];for(let j=1;j<pts.length;j++){const a=pts[j-1],z=pts[j],dx=z.x-a.x,dy=z.y-a.y,len2=dx*dx+dy*dy,u=len2?Math.max(0,Math.min(1,((q.x-a.x)*dx+(q.y-a.y)*dy)/len2)):0,x=a.x+u*dx,y=a.y+u*dy;if(Math.hypot(q.x-x,q.y-y)<=18)return true}return false}
     if(o.type==="line"||o.type==="arrow"){const a={x:o.x,y:o.y},z={x:o.x2,y:o.y2},dx=z.x-a.x,dy=z.y-a.y,len2=dx*dx+dy*dy,u=len2?Math.max(0,Math.min(1,((q.x-a.x)*dx+(q.y-a.y)*dy)/len2)):0,x=a.x+u*dx,y=a.y+u*dy;return Math.hypot(q.x-x,q.y-y)<=20}
-    if(o.type==="circle"){const cx=(o.x+o.x2)/2,cy=(o.y+o.y2)/2,rx=Math.abs(o.x2-o.x)/2,ry=Math.abs(o.y2-o.y)/2;if(!rx||!ry)return false;const v=((q.x-cx)/rx)**2+((q.y-cy)/ry)**2;return Math.abs(v-1)<.35}
-    if(o.type==="rect")return q.x>=b.minx-18&&q.x<=b.maxx+18&&q.y>=b.miny-18&&q.y<=b.maxy+18;
-    if(o.type==="text")return q.x>=b.minx-18&&q.x<=b.maxx+18&&q.y>=b.miny-45&&q.y<=b.maxy+18;
+    if(o.type==="circle"){const cx=(o.x+o.x2)/2,cy=(o.y+o.y2)/2,rx=Math.abs(o.x2-o.x)/2,ry=Math.abs(o.y2-o.y)/2;if(!rx||!ry)return false;return Math.abs(((q.x-cx)/rx)**2+((q.y-cy)/ry)**2-1)<.30}
+    if(o.type==="rect")return q.x>=b.minx-15&&q.x<=b.maxx+15&&q.y>=b.miny-15&&q.y<=b.maxy+15;
+    if(o.type==="text")return q.x>=b.minx-20&&q.x<=b.maxx+20&&q.y>=b.miny-40&&q.y<=b.maxy+20;
     return false;
   }
-  function drawArrow(o){const a=Math.atan2(o.y2-o.y,o.x2-o.x),L=22;ctx.beginPath();ctx.moveTo(o.x2,o.y2);ctx.lineTo(o.x2-L*Math.cos(a-.55),o.y2-L*Math.sin(a-.55));ctx.lineTo(o.x2-L*Math.cos(a+.55),o.y2-L*Math.sin(a+.55));ctx.closePath();ctx.fill()}
+  function drawArrow(o){const a=Math.atan2(o.y2-o.y,o.x2-o.x),L=20;ctx.beginPath();ctx.moveTo(o.x2,o.y2);ctx.lineTo(o.x2-L*Math.cos(a-.5),o.y2-L*Math.sin(a-.5));ctx.lineTo(o.x2-L*Math.cos(a+.5),o.y2-L*Math.sin(a+.5));ctx.closePath();ctx.fill()}
   function draw(){
+    if(!c.width||!c.height)return;
     ctx.clearRect(0,0,c.width,c.height);ctx.drawImage(img,0,0,c.width,c.height);
-    objects.forEach((o,idx)=>{const b=bounds(o);ctx.save();ctx.translate(b.cx,b.cy);ctx.rotate(o.rot||0);ctx.translate(-b.cx,-b.cy);ctx.strokeStyle=o.color;ctx.fillStyle=o.color;ctx.lineWidth=o.width||5;ctx.lineCap="round";ctx.lineJoin="round";ctx.setLineDash(o.dashed?[14,9]:[]);
+    objects.forEach((o,idx)=>{
+      const b=bounds(o);ctx.save();ctx.translate(b.cx,b.cy);ctx.rotate(o.rot||0);ctx.translate(-b.cx,-b.cy);
+      ctx.strokeStyle=o.color||"#e11d48";ctx.fillStyle=o.color||"#e11d48";ctx.lineWidth=o.width||5;ctx.lineCap="round";ctx.lineJoin="round";ctx.setLineDash(o.dashed?[16,10]:[]);
       if(o.type==="pen"){ctx.beginPath();(o.points||[]).forEach((p,j)=>j?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke()}
       else if(o.type==="line"||o.type==="arrow"){ctx.beginPath();ctx.moveTo(o.x,o.y);ctx.lineTo(o.x2,o.y2);ctx.stroke();if(o.type==="arrow"){ctx.setLineDash([]);drawArrow(o)}}
       else if(o.type==="circle"){ctx.beginPath();ctx.ellipse((o.x+o.x2)/2,(o.y+o.y2)/2,Math.abs(o.x2-o.x)/2,Math.abs(o.y2-o.y)/2,0,0,Math.PI*2);ctx.stroke()}
       else if(o.type==="rect")ctx.strokeRect(Math.min(o.x,o.x2),Math.min(o.y,o.y2),Math.abs(o.x2-o.x),Math.abs(o.y2-o.y));
-      else if(o.type==="text"){ctx.font=`bold ${o.fontSize||28}px Arial`;ctx.fillText(o.text,o.x,o.y)}ctx.restore();
+      else if(o.type==="text"){ctx.font=`bold ${o.fontSize||28}px Arial`;ctx.fillText(o.text,o.x,o.y)}
+      ctx.restore();
       if(idx===selected){ctx.save();ctx.strokeStyle="#0b6e9e";ctx.setLineDash([7,5]);ctx.lineWidth=2;ctx.strokeRect(b.minx-12,b.miny-12,b.maxx-b.minx+24,b.maxy-b.miny+24);ctx.restore()}
     });
   }
-  function setTool(t){tool=t;drawing=null;drag=null;selected=-1;m.querySelectorAll(".crvtAT").forEach(b=>b.classList.remove("active"));const b=m.querySelector("#"+t);if(b)b.classList.add("active");draw()}
-  ["select","pen","arrow","line","circle","rect","text"].forEach(id=>m.querySelector("#"+id).onclick=()=>setTool(id));
-  m.querySelector("#strokeStyle").onchange=e=>{strokeStyle=e.target.value;if(selected>=0){const before=snapshot();objects[selected].dashed=strokeStyle==="dashed";commit(before);draw()}};
-  m.querySelector("#color").onchange=e=>{color=e.target.value;if(selected>=0){const before=snapshot();objects[selected].color=color;commit(before);draw()}};
-  function rotate(delta){if(selected<0){toast("Sélectionne d’abord une annotation");return}const before=snapshot();objects[selected].rot=(objects[selected].rot||0)+delta*Math.PI/180;commit(before);draw()}
+  function setTool(t){tool=t;drawing=null;drag=null;selected=-1;m.querySelectorAll(".crvt-tool").forEach(b=>b.classList.remove("active"));const b=m.querySelector("#"+t);if(b)b.classList.add("active");draw()}
+  ["select","pen","arrow","line","circle","rect","text"].forEach(id=>m.querySelector("#"+id).addEventListener("click",e=>{e.preventDefault();e.stopPropagation();setTool(id)}));
+  m.querySelector("#strokeStyle").addEventListener("change",e=>{strokeStyle=e.target.value;if(selected>=0){const before=snapshot();objects[selected].dashed=strokeStyle==="dashed";commit(before);draw()}});
+  m.querySelector("#color").addEventListener("change",e=>{color=e.target.value;if(selected>=0){const before=snapshot();objects[selected].color=color;commit(before);draw()}});
+  function rotate(delta){if(selected>=0){const before=snapshot();objects[selected].rot=(objects[selected].rot||0)+delta*Math.PI/180;commit(before);draw()}else toast("Sélectionne d’abord une annotation")}
   m.querySelector("#rotateLeft").onclick=()=>rotate(-15);m.querySelector("#rotateRight").onclick=()=>rotate(15);m.querySelector("#undo").onclick=undo;m.querySelector("#redo").onclick=redo;
-  m.querySelector("#deleteSelected").onclick=()=>{if(selected<0){toast("Sélectionne d’abord une annotation");return}const before=snapshot();objects.splice(selected,1);commit(before);selected=-1;draw()};
-  function scaleSelected(f){if(selected<0){toast("Sélectionne d’abord une annotation");return}const before=snapshot(),o=objects[selected],b=bounds(o);if(o.type==="text")o.fontSize=Math.max(10,Math.min(120,(o.fontSize||28)*f));else if(o.type==="pen"&&Array.isArray(o.points))o.points=o.points.map(q=>({x:b.cx+(q.x-b.cx)*f,y:b.cy+(q.y-b.cy)*f}));else if(o.x!==undefined){o.x=b.cx+(o.x-b.cx)*f;o.y=b.cy+(o.y-b.cy)*f;if(o.x2!==undefined){o.x2=b.cx+(o.x2-b.cx)*f;o.y2=b.cy+(o.y2-b.cy)*f}}commit(before);draw()}
+  m.querySelector("#deleteSelected").onclick=()=>{if(selected>=0){const before=snapshot();objects.splice(selected,1);commit(before);selected=-1;drag=null;draw()}else toast("Sélectionne d’abord une annotation")};
+  function scaleSelected(factor){if(selected<0){toast("Sélectionne d’abord une annotation");return}const before=snapshot(),o=objects[selected],b=bounds(o);if(o.type==="text"){o.fontSize=Math.max(10,Math.min(120,(o.fontSize||28)*factor));commit(before);draw();return}const cx=b.cx,cy=b.cy;if(o.type==="pen"&&Array.isArray(o.points))o.points=o.points.map(q=>({x:cx+(q.x-cx)*factor,y:cy+(q.y-cy)*factor}));else if(o.x!==undefined&&o.y!==undefined){o.x=cx+(o.x-cx)*factor;o.y=cy+(o.y-cy)*factor;if(o.x2!==undefined){o.x2=cx+(o.x2-cx)*factor;o.y2=cy+(o.y2-cy)*factor}}commit(before);draw()}
   m.querySelector("#shrinkSelected").onclick=()=>scaleSelected(.8);m.querySelector("#growSelected").onclick=()=>scaleSelected(1.25);
   m.querySelector("#clear").onclick=()=>{if(confirm("Effacer toutes les annotations ?")){const before=snapshot();objects=[];commit(before);selected=-1;draw()}};
 
-  c.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();c.setPointerCapture?.(e.pointerId);const p=pt(e);
-    if(tool==="select"){selected=-1;for(let k=objects.length-1;k>=0;k--)if(hit(objects[k],p)){selected=k;break}if(selected>=0){drag={start:p,base:JSON.parse(JSON.stringify(objects[selected])),before:snapshot()};strokeStyle=objects[selected].dashed?"dashed":"solid";m.querySelector("#strokeStyle").value=strokeStyle}draw();return}
-    if(tool==="text"){const t=prompt("Texte à ajouter");if(t!==null&&t.trim()){const before=snapshot();objects.push({type:"text",x:p.x,y:p.y,text:t.trim(),color,rot:0,width:5,fontSize:28,x2:p.x+100,y2:p.y});selected=objects.length-1;commit(before)}setTool("select");return}
-    const before=snapshot();drawing={x:p.x,y:p.y,x2:p.x,y2:p.y,color,width:5,type:tool,rot:0,dashed:strokeStyle==="dashed",points:tool==="pen"?[{x:p.x,y:p.y}]:undefined};objects.push(drawing);selected=objects.length-1;commit(before);draw();
-  },{passive:false});
-  c.addEventListener("pointermove",e=>{e.preventDefault();e.stopPropagation();const p=pt(e);if(tool==="select"&&drag&&selected>=0){const dx=p.x-drag.start.x,dy=p.y-drag.start.y,o=objects[selected],b=drag.base;if(o.type==="pen")o.points=b.points.map(q=>({x:q.x+dx,y:q.y+dy}));else{o.x=b.x+dx;o.y=b.y+dy;if(b.x2!==undefined){o.x2=b.x2+dx;o.y2=b.y2+dy}}draw();return}if(!drawing)return;if(tool==="pen")drawing.points.push(p);else{drawing.x2=p.x;drawing.y2=p.y}draw()},{passive:false});
-  c.addEventListener("pointerup",e=>{e.preventDefault();e.stopPropagation();if(drag&&selected>=0){if(JSON.stringify(objects[selected])!==JSON.stringify(drag.base))commit(drag.before)}drawing=null;drag=null},{passive:false});
-  c.addEventListener("pointercancel",()=>{drawing=null;drag=null});
+  c.onpointerdown=e=>{
+    e.preventDefault();c.setPointerCapture?.(e.pointerId);const p=pt(e);
+    if(tool==="select"){
+      selected=-1;for(let k=objects.length-1;k>=0;k--)if(hit(objects[k],p)){selected=k;break}
+      if(selected>=0){drag={start:p,base:JSON.parse(JSON.stringify(objects[selected])),before:snapshot()};strokeStyle=objects[selected].dashed?"dashed":"solid";m.querySelector("#strokeStyle").value=strokeStyle;m.querySelector("#color").value=objects[selected].color||color}
+      draw();return;
+    }
+    if(tool==="text"){
+      const t=prompt("Texte à ajouter");
+      if(t!==null&&t.trim()){const before=snapshot();objects.push({type:"text",x:p.x,y:p.y,text:t.trim(),color,rot:0,width:5,fontSize:28,x2:p.x+100,y2:p.y});selected=objects.length-1;commit(before)}
+      setTool("select");return;
+    }
+    drawingBefore=snapshot();drawing={x:p.x,y:p.y,x2:p.x,y2:p.y,color,width:5,type:tool,rot:0,dashed:strokeStyle==="dashed",points:tool==="pen"?[{x:p.x,y:p.y}]:undefined};objects.push(drawing);selected=objects.length-1;draw();
+  };
+  c.onpointermove=e=>{e.preventDefault();const p=pt(e);if(tool==="select"&&drag&&selected>=0){const dx=p.x-drag.start.x,dy=p.y-drag.start.y,o=objects[selected],b=drag.base;if(o.type==="pen")o.points=b.points.map(q=>({x:q.x+dx,y:q.y+dy}));else{o.x=b.x+dx;o.y=b.y+dy;if(b.x2!==undefined){o.x2=b.x2+dx;o.y2=b.y2+dy}}draw();return}if(!drawing)return;if(tool==="pen")drawing.points.push(p);else{drawing.x2=p.x;drawing.y2=p.y}draw()};
+  c.onpointerup=e=>{e.preventDefault();if(drawing&&drawingBefore){commit(drawingBefore)}if(drag&&selected>=0){const before=drag.before,now=JSON.stringify(objects[selected]),base=JSON.stringify(drag.base);if(now!==base)commit(before)}drawing=null;drawingBefore=null;drag=null;draw()};
+  c.onpointercancel=()=>{if(drawing&&drawingBefore){objects.pop();}drawing=null;drawingBefore=null;drag=null;draw()};
 
   function rasterizeAnnotatedPhoto(){
-    const w=img.naturalWidth||img.width||c.width,h=img.naturalHeight||img.height||c.height,out=document.createElement("canvas");out.width=w;out.height=h;const octx=out.getContext("2d");octx.drawImage(img,0,0,w,h);const sx=w/c.width,sy=h/c.height,sw=(sx+sy)/2,sp=q=>({x:q.x*sx,y:q.y*sy});
-    objects.forEach(o=>{const pts=o.type==="pen"?(o.points||[]):[{x:o.x||0,y:o.y||0},{x:o.x2??o.x??0,y:o.y2??o.y??0}],pp=pts.map(sp),minx=Math.min(...pp.map(q=>q.x)),maxx=Math.max(...pp.map(q=>q.x)),miny=Math.min(...pp.map(q=>q.y)),maxy=Math.max(...pp.map(q=>q.y)),cx=(minx+maxx)/2,cy=(miny+maxy)/2;octx.save();octx.translate(cx,cy);octx.rotate(o.rot||0);octx.translate(-cx,-cy);octx.strokeStyle=o.color;octx.fillStyle=o.color;octx.lineWidth=(o.width||5)*sw;octx.lineCap="round";octx.lineJoin="round";octx.setLineDash(o.dashed?[14*sw,9*sw]:[]);
-      if(o.type==="pen"){octx.beginPath();(o.points||[]).forEach((q,j)=>{const z=sp(q);j?octx.lineTo(z.x,z.y):octx.moveTo(z.x,z.y)});octx.stroke()}
-      else if(o.type==="line"||o.type==="arrow"){const a=sp({x:o.x,y:o.y}),z=sp({x:o.x2,y:o.y2});octx.beginPath();octx.moveTo(a.x,a.y);octx.lineTo(z.x,z.y);octx.stroke();if(o.type==="arrow"){octx.setLineDash([]);const ang=Math.atan2(z.y-a.y,z.x-a.x),L=22*sw;octx.beginPath();octx.moveTo(z.x,z.y);octx.lineTo(z.x-L*Math.cos(ang-.55),z.y-L*Math.sin(ang-.55));octx.lineTo(z.x-L*Math.cos(ang+.55),z.y-L*Math.sin(ang+.55));octx.closePath();octx.fill()}}
-      else if(o.type==="circle"){const a=sp({x:o.x,y:o.y}),z=sp({x:o.x2,y:o.y2});octx.beginPath();octx.ellipse((a.x+z.x)/2,(a.y+z.y)/2,Math.abs(z.x-a.x)/2,Math.abs(z.y-a.y)/2,0,0,Math.PI*2);octx.stroke()}
-      else if(o.type==="rect"){const a=sp({x:o.x,y:o.y}),z=sp({x:o.x2,y:o.y2});octx.strokeRect(Math.min(a.x,z.x),Math.min(a.y,z.y),Math.abs(z.x-a.x),Math.abs(z.y-a.y))}
-      else if(o.type==="text"){const a=sp({x:o.x,y:o.y});octx.font=`bold ${(o.fontSize||28)*sw}px Arial`;octx.fillText(o.text,a.x,a.y)}octx.restore()});return out.toDataURL("image/jpeg",.92)
+    const w=img.naturalWidth||img.width||c.width,h=img.naturalHeight||img.height||c.height,out=document.createElement("canvas");out.width=w;out.height=h;const octx=out.getContext("2d");octx.drawImage(img,0,0,w,h);const sx=w/c.width,sy=h/c.height,sw=(sx+sy)/2,scalePoint=q=>({x:q.x*sx,y:q.y*sy});
+    objects.forEach(o=>{const pts=o.type==="pen"?(o.points||[]):[{x:o.x||0,y:o.y||0},{x:o.x2??o.x??0,y:o.y2??o.y??0}],pp=pts.map(scalePoint),minx=Math.min(...pp.map(q=>q.x)),maxx=Math.max(...pp.map(q=>q.x)),miny=Math.min(...pp.map(q=>q.y)),maxy=Math.max(...pp.map(q=>q.y)),b={cx:(minx+maxx)/2,cy:(miny+maxy)/2};octx.save();octx.translate(b.cx,b.cy);octx.rotate(o.rot||0);octx.translate(-b.cx,-b.cy);octx.strokeStyle=o.color||"#e11d48";octx.fillStyle=o.color||"#e11d48";octx.lineWidth=(o.width||5)*sw;octx.lineCap="round";octx.lineJoin="round";octx.setLineDash(o.dashed?[16*sw,10*sw]:[]);
+      if(o.type==="pen"){octx.beginPath();(o.points||[]).forEach((q,j)=>{const z=scalePoint(q);j?octx.lineTo(z.x,z.y):octx.moveTo(z.x,z.y)});octx.stroke()}
+      else if(o.type==="line"||o.type==="arrow"){const a=scalePoint({x:o.x,y:o.y}),z=scalePoint({x:o.x2,y:o.y2});octx.beginPath();octx.moveTo(a.x,a.y);octx.lineTo(z.x,z.y);octx.stroke();if(o.type==="arrow"){octx.setLineDash([]);const ang=Math.atan2(z.y-a.y,z.x-a.x),L=20*sw;octx.beginPath();octx.moveTo(z.x,z.y);octx.lineTo(z.x-L*Math.cos(ang-.5),z.y-L*Math.sin(ang-.5));octx.lineTo(z.x-L*Math.cos(ang+.5),z.y-L*Math.sin(ang+.5));octx.closePath();octx.fill()}}
+      else if(o.type==="circle"){const a=scalePoint({x:o.x,y:o.y}),z=scalePoint({x:o.x2,y:o.y2});octx.beginPath();octx.ellipse((a.x+z.x)/2,(a.y+z.y)/2,Math.abs(z.x-a.x)/2,Math.abs(z.y-a.y)/2,0,0,Math.PI*2);octx.stroke()}
+      else if(o.type==="rect"){const a=scalePoint({x:o.x,y:o.y}),z=scalePoint({x:o.x2,y:o.y2});octx.strokeRect(Math.min(a.x,z.x),Math.min(a.y,z.y),Math.abs(z.x-a.x),Math.abs(z.y-a.y))}
+      else if(o.type==="text"){const a=scalePoint({x:o.x,y:o.y});octx.font=`bold ${(o.fontSize||28)*sw}px Arial`;octx.fillText(o.text,a.x,a.y)}octx.restore();});return out.toDataURL("image/jpeg",.92);
   }
-  function close(){m.remove()}
-  m.querySelector("#cancel").onclick=close;m.querySelector("#cancelTop").onclick=close;
-  m.querySelector("#done").onclick=()=>{selected=-1;drag=drawing=null;photo.annotations=JSON.parse(JSON.stringify(objects));photo.baseData=photo.baseData||src;photo.data=rasterizeAnnotatedPhoto();if(audit.status==="Terminé")audit.status="Brouillon";save();m.remove();render()};
+
+  function close(saveIt){
+    if(saveIt){photo.annotations=JSON.parse(JSON.stringify(objects));photo.baseData=photo.baseData||src;photo.data=rasterizeAnnotatedPhoto();if(audit.status==="Terminé")audit.status="Brouillon";save();render()}
+    document.documentElement.classList.remove("crvt-annotation-open");document.body.classList.remove("crvt-annotation-open");m.remove();style.remove();
+  }
+  m.querySelector("#done").onclick=()=>close(true);m.querySelector("#cancel").onclick=()=>close(false);m.querySelector("#closeAnnot").onclick=()=>close(false);
+  m.addEventListener("click",e=>{if(e.target===m)close(false)});
+  window.addEventListener("resize",fitCanvas,{passive:true});
 }
 
 function validateAudit(){
@@ -1113,6 +1168,7 @@ function validationTarget(item){
   if(t.includes('auditeur non renseigné')) return {selector:'[data-top="auditeur"]'};
   if(t.includes('aucun module sélectionné')) return {selector:'[data-toggle]'};
   if(t.includes('tableau électrique : décision')) return {selector:'[data-field="place"]'};
+  if(t.includes('tableau électrique : aucune photo')) return {selector:'#tableauFollow'};
   if(t.includes('cheminement : type de passage')) return {selector:'[data-field="passage"]'};
   if(t.includes('cheminement : protection')) return {selector:'[data-field="protection"]'};
   if(t.includes('cheminement : aucune photo')) return {selector:'#cheminementFollow'};
@@ -1223,10 +1279,7 @@ puissance:"Puissance souscrite",
 compteur:"Type de compteur",
 typeborne:"Type de borne",
 environnement:"Environnement de la borne",
-position:"Positionnement de la borne",
-longueurCable:"Mesure du cheminement (m)",
-typeCable:"Type de câble",
-cableCommunication:"Câble de communication"
+position:"Positionnement de la borne"
 };
 
 let pages=[];
@@ -1269,6 +1322,7 @@ pages.push(`<section class="page reportPage">
 /* Tableau électrique */
 if(audit.sections.tableau){
  let photos=audit.photos.tableau||[];
+ let place=audit.data.place||"";
  const blocks=photoPageBlocks(photos,"TABLEAU ÉLECTRIQUE","TABLEAU ÉLECTRIQUE");
  const total=blocks.length||1;
  blocks.forEach((block,idx)=>{
@@ -1277,10 +1331,15 @@ if(audit.sections.tableau){
    pages.push(`<section class="page reportPage">
     ${pageHeader(reportPageNo++)}
     <h1>TABLEAU ÉLECTRIQUE${!first?' — SUITE':''}</h1><div class="blueRule"></div>
+    ${first?`<div class="bigAnswer"><span>PLACE DISPONIBLE DANS LE TABLEAU</span><b>${esc(place||"Non renseigné")}</b></div>
+    ${place==="Non"?`<div class="recommendation"><b>TABLEAU SUPPLÉMENTAIRE À PRÉVOIR</b>${photos.length?`<br>La photo ci-dessous permet de localiser la situation constatée.`:""}</div>`:""}`:""}
     ${block.html}
     ${last?noteHTML("tableau"):""}
    </section>`);
  });
+ if(!blocks.length){
+   pages.push(`<section class="page reportPage">${pageHeader(reportPageNo++)}<h1>TABLEAU ÉLECTRIQUE</h1><div class="blueRule"></div><div class="bigAnswer"><span>PLACE DISPONIBLE DANS LE TABLEAU</span><b>${esc(place||"Non renseigné")}</b></div>${place==="Non"?`<div class="recommendation"><b>TABLEAU SUPPLÉMENTAIRE À PRÉVOIR</b></div>`:""}${noteHTML("tableau")}</section>`);
+ }
 }
 
 /* Cheminement : photos regroupées par deux, avec contexte répété sur les pages de suite. */
@@ -1492,6 +1551,7 @@ header{position:fixed !important;top:0 !important;left:0 !important;right:0 !imp
 .quickNavInner{overscroll-behavior-x:contain;touch-action:pan-x;overflow-x:auto;overflow-y:hidden;}
 @media print{body{padding-top:0 !important;}header{position:static !important;display:none !important;}#quickNav{display:none !important;}}
 </style>
+</style>
 </head><body class="theme-${pdfThemeKey}">${pages.join("")}<button id="printBtn" disabled>🖨️ Imprimer / Enregistrer en PDF</button><div id="ready" style="position:fixed;left:18px;bottom:18px;padding:8px 12px;border-radius:7px;background:#fff;border:1px solid #cbd5dc;font-size:12px;font-weight:700;color:#53616c;z-index:98">Préparation du rapport…</div><script>(function(){const btn=document.getElementById("printBtn"),ready=document.getElementById("ready"); const imgs=[...document.images]; const wait=imgs.map(img=>img.complete?Promise.resolve():new Promise(r=>{img.addEventListener("load",r,{once:true});img.addEventListener("error",r,{once:true})})); Promise.all(wait).then(()=>{requestAnimationFrame(()=>{requestAnimationFrame(()=>{btn.disabled=false;btn.textContent="🖨️ Imprimer / Enregistrer en PDF";ready.textContent="Rapport prêt à être imprimé";btn.onclick=()=>window.print();});});});})();<\/script>
 <button id="crvtBackTop" class="crvt-back-top noPrint" type="button" aria-label="Remonter en haut" title="Remonter en haut">↑ <span>Haut</span></button>
 <style>
@@ -1525,8 +1585,6 @@ header{position:fixed !important;top:0 !important;left:0 !important;right:0 !imp
   update();
 })();
 <\/script>
-<!-- crvt-pwa-registration -->
-<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}</script>
 </body></html>`;
 // Affichage dans la même page : aucun onglet about:srcdoc et retour CRVT toujours possible.
 const oldOverlay=document.getElementById("crvtReportOverlay");
