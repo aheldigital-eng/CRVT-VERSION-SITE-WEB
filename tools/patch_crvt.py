@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 p = Path('index.html')
@@ -59,13 +60,23 @@ if old in s:
     s = s.replace(old, new, 1)
 
 # 9) Remove the old PLACE DISPONIBLE / TABLEAU SUPPLÉMENTAIRE answer from the PDF.
-# Do not remove the actual tableau photo/annotation blocks.
-old = '''    ${first?`<div class="bigAnswer"><span>PLACE DISPONIBLE DANS LE TABLEAU</span><b>${esc(place||"Non renseigné")}</b>
-    ${place==="Non"?`<div class="recommendation"><b>TABLEAU SUPPLÉMENTAIRE À PRÉVOIR</b>${photos.length?`<br>La photo ci-dessous permet de localiser la situation constatée.`:""}</div>`:""}`:""}
-    ${block.html}'''
-new = '''    ${block.html}'''
-if old in s:
-    s = s.replace(old, new, 1)
+# Use targeted regex because the source contains nested template literals.
+s = re.sub(
+    r'\n\s*\$\{first\?`<div class="bigAnswer"><span>PLACE DISPONIBLE DANS LE TABLEAU</span>.*?`:\"\"\}\n\s*\$\{block\.html\}',
+    '\n    ${block.html}',
+    s,
+    count=1,
+    flags=re.S,
+)
+
+# 10) Remove the old fallback PDF page when there are no tableau blocks.
+s = re.sub(
+    r'\n\s*if\(!blocks\.length\)\{\n\s*pages\.push\(`[^`]*PLACE DISPONIBLE DANS LE TABLEAU.*?`\);\n\s*\}',
+    '',
+    s,
+    count=1,
+    flags=re.S,
+)
 
 p.write_text(s, encoding='utf-8')
 print('CRVT patch applied:', len(s), 'bytes')
