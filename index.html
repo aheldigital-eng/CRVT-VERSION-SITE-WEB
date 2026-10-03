@@ -523,8 +523,6 @@ let t=document.getElementById("tableauFollow");
 if(t){
 if(audit.data.place==="Oui"){
 t.innerHTML=`<div class="item"><b>📷 Photo du tableau</b><p>Prendre une photo puis l’annoter.</p>${photos("tableau")}</div>`;
-}else if(audit.data.place==="Non"){
-t.innerHTML=`<div class="item"><b>⚠️ Prévoir un tableau supplémentaire</b><p>Ajouter une photo du tableau existant et l’annoter.</p>${photos("tableau")}</div>`;
 }else t.innerHTML="";
 }
 let c=document.getElementById("cheminementFollow");
@@ -1289,9 +1287,7 @@ if(audit.sections.tableau){
     ${last?noteHTML("tableau"):""}
    </section>`);
  });
- if(!blocks.length){
-   pages.push(`<section class="page reportPage">${pageHeader(reportPageNo++)}<h1>TABLEAU ÉLECTRIQUE</h1><div class="blueRule"></div><div class="bigAnswer"><span>PLACE DISPONIBLE DANS LE TABLEAU</span><b>${esc(place||"Non renseigné")}</b></div>${place==="Non"?`<div class="recommendation"><b>TABLEAU SUPPLÉMENTAIRE À PRÉVOIR</b></div>`:""}${noteHTML("tableau")}</section>`);
- }
+
 }
 
 /* Cheminement : photos regroupées par deux, avec contexte répété sur les pages de suite. */
