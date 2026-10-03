@@ -1,4 +1,4 @@
-name: Patch CRVT fields
+name: Publish CRVT from validated V7
 on:
   push:
     branches: [main]
@@ -6,32 +6,80 @@ on:
 permissions:
   contents: write
 jobs:
-  patch:
+  publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout gh-pages
+      - name: Checkout published site
         uses: actions/checkout@v4
         with:
           ref: gh-pages
           fetch-depth: 1
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Checkout patch script
+      - name: Checkout validated V7 source
         uses: actions/checkout@v4
         with:
           ref: main
-          path: patch-source
+          path: source
           fetch-depth: 1
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Patch CRVT
+      - name: Restore validated V7 and add requested cable fields
+        shell: python
         run: |
-          python3 patch-source/tools/patch_report.py || true
-          python3 patch-source/tools/fix_report_binding.py || true
-          python3 patch-source/tools/patch_donneur.py
-      - name: Publish patched gh-pages
+          from pathlib import Path
+          import shutil
+
+          src = Path('source/CRVT_DERNIERE_VERSION_VALIDEe_index-1.html')
+          dst = Path('index.html')
+          if not src.exists():
+              raise SystemExit('Validated V7 source file not found')
+          shutil.copyfile(src, dst)
+          s = dst.read_text(encoding='utf-8')
+
+          old_common = '''const common=[
+["puissance","Puissance souscrite","select:3 kVA|6 kVA|9 kVA|12 kVA|15 kVA|18 kVA|24 kVA|36 kVA|Autre"],["compteur","Type de Compteur","select:Monophasé|Triphasé|Autre"],
+["divisionnaire","Installation d’un tableau divisionnaire","select:Oui|Non"],["typeborne","Type de borne","select:Monophasé|Triphasé|Autre"],
+["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"]
+];'''
+          new_common = '''const common=[
+["puissance","Puissance souscrite","select:3 kVA|6 kVA|9 kVA|12 kVA|15 kVA|18 kVA|20 kVA|24 kVA|30 kVA|36 kVA|Autre"],["compteur","Type de Compteur","select:Monophasé|Triphasé|Autre"],
+["divisionnaire","Installation d’un tableau divisionnaire","select:Oui|Non"],["typeborne","Type de borne","select:Monophasé|Triphasé|Autre"],
+["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"],
+["longueur","Longueur cheminement (m)"],["hauteur","Hauteur / profondeur (m)"],["typeCable","Type de câble","select:3G10|5G10"],["cableCommunication","Câble de communication","select:Oui|Non"]
+];'''
+          if old_common not in s:
+              raise SystemExit('Validated V7 common field block not found')
+          s = s.replace(old_common, new_common, 1)
+
+          old_labels = '''const techLabels={
+ divisionnaire:"Installation d’un tableau divisionnaire",
+ puissance:"Puissance souscrite",
+ compteur:"Type de compteur",
+ typeborne:"Type de borne",
+ environnement:"Environnement de la borne",
+ position:"Positionnement de la borne"
+};'''
+          new_labels = '''const techLabels={
+ divisionnaire:"Installation d’un tableau divisionnaire",
+ puissance:"Puissance souscrite",
+ compteur:"Type de compteur",
+ typeborne:"Type de borne",
+ environnement:"Environnement de la borne",
+ position:"Positionnement de la borne",
+ longueur:"Longueur cheminement (m)",
+ hauteur:"Hauteur / profondeur (m)",
+ typeCable:"Type de câble",
+ cableCommunication:"Câble de communication"
+};'''
+          if old_labels not in s:
+              raise SystemExit('Validated V7 PDF labels block not found')
+          s = s.replace(old_labels, new_labels, 1)
+
+          dst.write_text(s, encoding='utf-8')
+      - name: Publish
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'Restore CRVT donor selector and PDF donor name'
+          git commit -m 'Restore validated CRVT V7 with cable fields'
           git push origin gh-pages
