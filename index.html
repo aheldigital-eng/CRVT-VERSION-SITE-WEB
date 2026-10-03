@@ -25,26 +25,12 @@ function picker(sec,mode){
   i.accept='image/*';
   i.setAttribute('aria-label',mode==='camera'?'Prendre une photo':'Choisir une photo');
   if(mode==='camera') i.setAttribute('capture','environment');
-  i.style.position='fixed';
-  i.style.left='50%';
-  i.style.top='50%';
-  i.style.width='1px';
-  i.style.height='1px';
-  i.style.opacity='0.01';
-  i.style.zIndex='99999';
+  i.style.position='fixed';i.style.left='50%';i.style.top='50%';i.style.width='1px';i.style.height='1px';i.style.opacity='0.01';i.style.zIndex='99999';
   document.body.appendChild(i);
-  i.onchange=()=>{
-    const f=i.files&&i.files[0];
-    if(f){ addPhoto(f,sec); }
-    setTimeout(()=>i.remove(),500);
-  };
-  i.onclick=()=>{};
-  requestAnimationFrame(()=>{
-    try { i.click(); }
-    catch(e) { toast('Impossible d’ouvrir la galerie'); i.remove(); }
-  });
+  i.onchange=()=>{const f=i.files&&i.files[0];if(f)addPhoto(f,sec);setTimeout(()=>i.remove(),500)};
+  try{i.click()}catch(e){toast('Impossible d’ouvrir la galerie');i.remove()}
 }
-function addPhotofunction addPhoto(file,sec){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const max=1800;let w=im.naturalWidth,h=im.naturalHeight;if(Math.max(w,h)>max){const q=max/Math.max(w,h);w=Math.round(w*q);h=Math.round(h*q)}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);audit.photos[sec].push({data:c.toDataURL('image/jpeg',.82),baseData:c.toDataURL('image/jpeg',.82),caption:'Photo',annotations:[],rotation:0});save().then(render)};im.src=r.result};r.readAsDataURL(file)}
+function addPhotofunction addPhotofunction addPhoto(file,sec){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const max=1800;let w=im.naturalWidth,h=im.naturalHeight;if(Math.max(w,h)>max){const q=max/Math.max(w,h);w=Math.round(w*q);h=Math.round(h*q)}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);audit.photos[sec].push({data:c.toDataURL('image/jpeg',.82),baseData:c.toDataURL('image/jpeg',.82),caption:'Photo',annotations:[],rotation:0});save().then(render)};im.src=r.result};r.readAsDataURL(file)}
 function finish(){const e=[];if(!audit.client.trim())e.push('Client non renseigné');if(!audit.auditeur.trim())e.push('Auditeur non renseigné');if(!audit.sections.tableau&&!audit.sections.cheminement&&!audit.sections.borne)e.push('Aucun module sélectionné');if(e.length){validation(e);return}audit.status='Terminé';save().then(render)}function validation(items){const x=document.createElement('div');x.className='validation';x.innerHTML=`<div class="validationBox"><div class="validationHead"><div><b>Vérification du rapport</b><div class="muted">${items.length} point(s) à corriger</div></div><button class="btn secondary">✕</button></div>${items.map(i=>`<div class="validationItem"><b class="err">⚠ ${esc(i)}</b></div>`).join('')}<div style="padding:14px"><button class="btn secondary">Modifier l’audit</button></div></div>`;document.body.appendChild(x);x.querySelectorAll('button').forEach(b=>b.onclick=()=>x.remove())}
 function signatures(){const m=document.createElement('div');m.className='modal';m.innerHTML=`<div class="modalBox"><div class="tools"><button class="btn secondary" id="closeSig">Fermer</button><button class="btn primary" id="saveSig">✓ Valider les signatures</button></div><div class="sigGrid"><div class="sigBox"><h3>Signature client</h3><canvas id="sigC" width="900" height="380"></canvas></div><div class="sigBox"><h3>Signature auditeur</h3><canvas id="sigA" width="900" height="380"></canvas></div></div></div>`;document.body.appendChild(m);sigCanvas(m.querySelector('#sigC'),'signatureClient');sigCanvas(m.querySelector('#sigA'),'signatureAuditeur');m.querySelector('#closeSig').onclick=()=>m.remove();m.querySelector('#saveSig').onclick=()=>{save().then(()=>{m.remove();render();toast('Signatures enregistrées')})}}
 function sigCanvas(c,key){const ctx=c.getContext('2d');ctx.lineWidth=5;ctx.lineCap='round';ctx.strokeStyle='#102536';let d=false;const p=e=>{const r=c.getBoundingClientRect();return{x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height}};c.onpointerdown=e=>{d=true;c.setPointerCapture(e.pointerId);let q=p(e);ctx.beginPath();ctx.moveTo(q.x,q.y)};c.onpointermove=e=>{if(!d)return;let q=p(e);ctx.lineTo(q.x,q.y);ctx.stroke()};c.onpointerup=()=>{d=false;audit[key]=c.toDataURL('image/png')};if(audit[key]){const im=new Image();im.onload=()=>ctx.drawImage(im,0,0,c.width,c.height);im.src=audit[key]}}
