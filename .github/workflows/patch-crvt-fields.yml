@@ -15,22 +15,20 @@ jobs:
           ref: gh-pages
           fetch-depth: 1
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Checkout main source
+      - name: Checkout patch tools
         uses: actions/checkout@v4
         with:
           ref: main
           path: source
           fetch-depth: 1
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Restore CRVT V7 with rebuilt annotation editor
-        run: cp source/index-CRVT-annotations-corrige.html index.html
-      - name: Apply CRVT V7 information and annotation patch
-        run: python source/tools/patch_crvt.py
+      - name: Apply safe tableau-only correction
+        run: python source/tools/patch_published_tableau.py
       - name: Publish
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'Publish CRVT V7 with rebuilt annotation editor'
+          git commit -m 'Fix tableau block without removing photo controls'
           git push origin gh-pages
