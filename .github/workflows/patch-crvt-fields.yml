@@ -1,0 +1,45 @@
+name: Patch CRVT fields
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Patch CRVT
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('function addPhotofunction addPhotofunction addPhoto(file,sec)', 'function addPhoto(file,sec)')
+          s=s.replace("data:{puissance:'',compteur:'',divisionnaire:'',typeborne:'',environnement:'',position:'',longueur:'',hauteur:'',observations:''}", "data:{puissance:'',compteur:'',divisionnaire:'',typeborne:'',environnement:'',position:'',longueur:'',hauteur:'',typeCable:'',cableCommunication:'',observations:''}")
+          old="<div>${field('longueur','Longueur cheminement (m)')}</div><div>${field('hauteur','Hauteur / profondeur (m)')}</div>"
+          new="<div>${field('longueur','Longueur cheminement (m)')}</div><div>${field('hauteur','Hauteur / profondeur (m)')}</div><div>${field('typeCable','Type de câble','3G10|5G10')}</div><div>${field('cableCommunication','Câble de communication','Oui|Non')}</div>"
+          if old not in s:
+              raise SystemExit('render target not found')
+          s=s.replace(old,new,1)
+          old2="['Longueur cheminement',audit.data.longueur?audit.data.longueur+' m':''],['Hauteur / profondeur',audit.data.hauteur?audit.data.hauteur+' m':'']"
+          new2="['Longueur cheminement',audit.data.longueur?audit.data.longueur+' m':''],['Hauteur / profondeur',audit.data.hauteur?audit.data.hauteur+' m':''],['Type de câble',audit.data.typeCable],['Câble de communication',audit.data.cableCommunication]"
+          if old2 not in s:
+              raise SystemExit('report target not found')
+          s=s.replace(old2,new2,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Publish patched gh-pages
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Fix photo picker and add cable measurements'
+          git push origin gh-pages
