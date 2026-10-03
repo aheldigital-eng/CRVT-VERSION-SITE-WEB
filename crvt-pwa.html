@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b6e9e">
+<link rel="manifest" href="crvt-pwa-manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>CRVT — Compte rendu de visite technique</title>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f1f5f9}iframe{display:block;width:100%;height:100%;border:0;background:#f1f5f9}</style>
+</head>
+<body>
+<iframe id="crvt" src="./index.html" title="CRVT"></iframe>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./crvt-pwa-sw.js').catch(()=>{}));}
+const frame=document.getElementById('crvt');
+function patchCRVT(){
+  try{
+    const w=frame.contentWindow, d=frame.contentDocument;
+    if(!w || !d || !w.audit || !w.modules || !w.render) return false;
+    w.modules.tableau=[];
+    w.renderFollowups=function(){
+      const t=d.getElementById('tableauFollow');
+      if(t)t.innerHTML='<div class="item"><b>📷 Photo du tableau</b><p>Ajouter une photo du tableau et l’annoter.</p>'+w.photos('tableau')+'</div>';
+      const c=d.getElementById('cheminementFollow');
+      if(c)c.innerHTML='<div class="item"><b>📷 Photos du cheminement</b><p>Ajouter autant de photos que nécessaire et les annoter.</p>'+w.photos('cheminement')+'</div>';
+      const b=d.getElementById('borneFollow');
+      if(b)b.innerHTML='<div class="item"><b>📷 Photo de l’emplacement</b><p>Ajouter une photo de l’emplacement de la borne et l’annoter si nécessaire.</p>'+w.photos('borne')+'</div>';
+      if(w.bindPhotoInputs)w.bindPhotoInputs();
+      if(w.bindCaptionInputs)w.bindCaptionInputs();
+    };
+    w.render();
+    return true;
+  }catch(e){return false;}
+}
+frame.addEventListener('load',()=>{let n=0;const t=setInterval(()=>{if(patchCRVT()||++n>30)clearInterval(t)},200);});
+</script>
+</body>
+</html>
