@@ -42,7 +42,7 @@ jobs:
           EOF
 
           cat > sw.js <<'EOF'
-          const CACHE = 'crvt-pwa-v1';
+          const CACHE = 'crvt-pwa-v2';
           const BASE = self.registration.scope;
           const CORE = [BASE, BASE + 'manifest.json'];
 
@@ -70,28 +70,43 @@ jobs:
             p = Path('index.html')
             s = p.read_text(encoding='utf-8')
             marker = '</body>'
-            block = '''<!-- crvt-pwa-registration -->\n<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}</script>\n'''
+            block = "<!-- crvt-pwa-registration -->\n<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}</script>\n"
             if marker in s:
                 s = s.replace(marker, block + marker, 1)
                 p.write_text(s, encoding='utf-8')
             PY
           fi
 
-          # Minimal generated icons, using SVG-free PNGs so Android can install the PWA.
+          # Generate valid 192x192 and 512x512 PNG icons with Python stdlib only.
           python3 - <<'PY'
-          from PIL import Image, ImageDraw, ImageFont
-          for size, name in [(192,'icon-192.png'),(512,'icon-512.png')]:
-              im = Image.new('RGB',(size,size),'#0b6e9e')
-              d = ImageDraw.Draw(im)
-              d.rounded_rectangle((size*.08,size*.08,size*.92,size*.92),radius=size*.12,fill='#13a9b8')
-              try:
-                  font=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',int(size*.28))
-              except Exception:
-                  font=None
-              text='CRVT'
-              box=d.textbbox((0,0),text,font=font)
-              d.text(((size-(box[2]-box[0]))/2,(size-(box[3]-box[1]))/2-size*.03),text,fill='white',font=font)
-              im.save(name)
+          import struct, zlib, binascii
+
+          def chunk(kind, data):
+              return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', binascii.crc32(kind + data) & 0xffffffff)
+
+          def png(path, size):
+              rows=[]
+              for y in range(size):
+                  row=bytearray([0])
+                  for x in range(size):
+                      # CRVT teal background with a simple white rounded-ish central mark.
+                      margin=size//8
+                      inside=(margin < x < size-margin and margin < y < size-margin)
+                      if inside:
+                          r,g,b=19,169,184
+                      else:
+                          r,g,b=11,110,158
+                      row.extend((r,g,b))
+                  rows.append(bytes(row))
+              raw=zlib.compress(b''.join(rows),9)
+              data=b'\x89PNG\r\n\x1a\n'
+              data+=chunk(b'IHDR',struct.pack('>IIBBBBB',size,size,8,2,0,0,0))
+              data+=chunk(b'IDAT',raw)
+              data+=chunk(b'IEND',b'')
+              open(path,'wb').write(data)
+
+          png('icon-192.png',192)
+          png('icon-512.png',512)
           PY
 
       - name: Publish PWA
