@@ -50,7 +50,35 @@ function report(){const tech=[['Puissance souscrite',audit.data.puissance],['Typ
     ];
     const photos=[];
     if(a&&a.photos) Object.entries(audit.photos).forEach(([sec,arr])=>(arr||[]).forEach(p=>{if(p&&p.data)photos.push({sec,data:p.data,note:p.note||''})}));
-    return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CRVT - Compte rendu de visite technique</title><style>body{font-family:Arial,sans-serif;margin:0;color:#172433;background:#fff}main{max-width:900px;margin:auto;padding:28px}h1{color:#075777;margin:0 0 4px;font-size:25px}h2{color:#075777;border-bottom:2px solid #d8e7ed;padding-bottom:7px;margin-top:25px}.meta{color:#64748b;margin-bottom:20px}.grid{display:grid;grid-template-columns:1fr 1fr;border:1px solid #d9e3e8}.cell{padding:9px;border-bottom:1px solid #e6edf0}.cell:nth-child(odd){font-weight:700;background:#f7fafb}.photos{display:grid;grid-template-columns:1fr 1fr;gap:12px}.photo{border:1px solid #d9e3e8;padding:8px;border-radius:8px}.photo img{width:100%;max-height:330px;object-fit:contain}.note{font-size:12px;color:#64748b}@media(max-width:650px){main{padding:16px}.grid,.photos{grid-template-columns:1fr}}</style></head><body><main><h1>CRVT</h1><div class="meta">Compte rendu de visite technique</div><h2>Informations techniques</h2><div class="grid">${rows.filter(r=>r[1]!==undefined&&r[1]!=='').map(r=>`<div class="cell">${escR(r[0])}</div><div class="cell">${escR(r[1])}</div>`).join('')}</div>${a&&a.commentaire?`<h2>Commentaire</h2><p>${escR(audit.commentaire).replace(/\n/g,'<br>')}</p>`:''}${d.observations?`<h2>Observations</h2><p>${escR(d.observations).replace(/\n/g,'<br>')}</p>`:''}${photos.length?`<h2>Photos</h2><div class="photos">${photos.map(p=>`<div class="photo"><img src="${p.data}"><div class="note">${escR(p.sec)}${p.note?' — '+escR(p.note):''}</div></div>`).join('')}</div>`:''}<h2>Validation</h2><p>Compte rendu généré depuis CRVT.</p></main></body></html>`;
+    return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CRVT - Compte rendu de visite technique</title><style>body{font-family:Arial,sans-serif;margin:0;color:#172433;background:#fff}main{max-width:900px;margin:auto;padding:28px}h1{color:#075777;margin:0 0 4px;font-size:25px}h2{color:#075777;border-bottom:2px solid #d8e7ed;padding-bottom:7px;margin-top:25px}.meta{color:#64748b;margin-bottom:20px}.grid{display:grid;grid-template-columns:1fr 1fr;border:1px solid #d9e3e8}.cell{padding:9px;border-bottom:1px solid #e6edf0}.cell:nth-child(odd){font-weight:700;background:#f7fafb}.photos{display:grid;grid-template-columns:1fr 1fr;gap:12px}.photo{border:1px solid #d9e3e8;padding:8px;border-radius:8px}.photo img{width:100%;max-height:330px;object-fit:contain}.note{font-size:12px;color:#64748b}@media(max-width:650px){main{padding:16px}.grid,.photos{grid-template-columns:1fr}}</style></head><body><main><h1>CRVT</h1><div class="meta">Compte rendu de visite technique</div><h2>Informations techniques</h2><div class="grid">${rows.filter(r=>r[1]!==undefined&&r[1]!=='').map(r=>`<div class="cell">${escR(r[0])}</div><div class="cell">${escR(r[1])}</div>`).join('')}</div>${a&&a.commentaire?`<h2>Commentaire</h2><p>${escR(audit.commentaire).replace(/\n/g,'<br>')}</p>`:''}${d.observations?`<h2>Observations</h2><p>${escR(d.observations).replace(/\n/g,'<br>')}</p>`:''}${photos.length?`<h2>Photos</h2><div class="photos">${photos.map(p=>`<div class="photo"><img src="${p.data}"><div class="note">${escR(p.sec)}${p.note?' — '+escR(p.note):''}</div></div>`).join('')}</div>`:''}<h2>Validation</h2><p>Compte rendu généré depuis CRVT.</p></main><script id="crvtDonneurPatch">
+(function(){
+  const donors=['BUMP','CAP\'BORNE','FRESHMILE','50FIVE','TIME2PLUG'];
+  function getAudit(){return typeof audit!=='undefined'?audit:null;}
+  function addDonor(){
+    const a=getAudit(); const general=document.getElementById('general');
+    if(!a||!general||document.getElementById('crvtDonneurSelect')) return;
+    const grid=general.querySelector('.grid'); if(!grid) return;
+    const wrap=document.createElement('div'); wrap.className='full';
+    wrap.innerHTML='<label for="crvtDonneurSelect">Donneur d\'ordre</label><select id="crvtDonneurSelect"><option value="">Sélectionner…</option>'+donors.map(x=>'<option value="'+x.replace(/'/g,"&#039;")+'">'+x+'</option>').join('')+'</select>';
+    grid.insertBefore(wrap,grid.children[2]||null);
+    const sel=wrap.querySelector('select'); sel.value=a.donneur||'BUMP';
+    a.donneur=sel.value;
+    sel.addEventListener('change',()=>{a.donneur=sel.value;if(typeof save==='function')save();});
+  }
+  function injectDonorIntoReport(){
+    const overlay=document.getElementById('crvtReportFix'); if(!overlay) return;
+    const frame=overlay.querySelector('iframe'); const a=getAudit(); if(!frame||!a) return;
+    const apply=()=>{try{const doc=frame.contentDocument;if(!doc||!doc.body)return;if(doc.getElementById('crvtDonorReport'))return;const meta=doc.querySelector('.meta');if(!meta)return;const d=doc.createElement('div');d.id='crvtDonorReport';d.style.cssText='font-weight:800;color:#075777;margin-top:4px';d.textContent=a.donneur||'';meta.appendChild(d);}catch(e){}}
+    frame.addEventListener('load',apply,{once:true}); setTimeout(apply,200);
+  }
+  function watch(){
+    addDonor();setTimeout(addDonor,100);setTimeout(addDonor,500);
+    const mo=new MutationObserver(()=>{addDonor();injectDonorIntoReport();});
+    mo.observe(document.body,{childList:true,subtree:true});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watch);else watch();
+})();
+</script></body></html>`;
   }
   function showReport(){
     const old=document.getElementById('crvtReportFix'); if(old)old.remove();
