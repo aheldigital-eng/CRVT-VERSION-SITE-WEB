@@ -1,0 +1,129 @@
+name: CRVT augment
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  augment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Patch gh-pages V7 without replacing existing functions
+        shell: bash
+        run: |
+          git fetch origin gh-pages:gh-pages
+          git checkout gh-pages
+          python3 <<'PY'
+          from pathlib import Path
+
+          p = Path('index.html')
+          html = p.read_text(encoding='utf-8')
+          marker = '<!-- CRVT V7+ cable fields patch -->'
+          if marker in html:
+              print('Patch already present')
+              raise SystemExit(0)
+
+          patch = r'''<!-- CRVT V7+ cable fields patch -->
+          <style id="crvt-v7-cable-fields">
+          .crvtCableExtra{margin-top:12px;border:1px solid #dbe7ee;border-radius:15px;padding:13px;background:linear-gradient(180deg,#fff,#f7fbfc)}
+          .crvtCableExtra h3{margin:0 0 8px;font-size:15px;color:#0b496b}
+          .crvtCableGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+          .crvtCableComm{margin-top:10px;padding:10px;border:1px solid #dbe7ee;border-radius:12px;background:#fbfdff}
+          .crvtCableCommTitle{font-size:13px;font-weight:800;color:#405365;margin-bottom:7px}
+          .crvtCableChoices{display:flex;gap:8px;flex-wrap:wrap}
+          .crvtCableChoice{border:1px solid #cbd5e1;background:#f8fafc;border-radius:10px;padding:10px 15px;font-weight:800;cursor:pointer}
+          .crvtCableChoice.active{border-color:#0b6e9e;background:#e5f7fa;box-shadow:0 0 0 2px #0b6e9e22;color:#0b5d86}
+          @media(max-width:620px){.crvtCableGrid{grid-template-columns:1fr}}
+          </style>
+          <script>
+          (function(){
+            'use strict';
+            function cableFields(){
+              const host=document.getElementById('cheminementFollow');
+              if(!host)return;
+              const old=host.querySelector('.crvtCableExtra');
+              if(old)old.remove();
+              const d=audit.data||{};
+              const box=document.createElement('div');
+              box.className='crvtCableExtra';
+              box.innerHTML=`
+                <h3>⚡ Caractéristiques du câble</h3>
+                <div class="crvtCableGrid">
+                  <div>
+                    <label>Mesure du cheminement (m)</label>
+                    <input id="crvtCableLength" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ex. 12,5" value="${esc(d.longueurCable||'')}">
+                  </div>
+                  <div>
+                    <label>Type de câble</label>
+                    <select id="crvtCableType">
+                      <option value="">Sélectionner…</option>
+                      <option value="3G10" ${d.typeCable==='3G10'?'selected':''}>3G10</option>
+                      <option value="5G10" ${d.typeCable==='5G10'?'selected':''}>5G10</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="crvtCableComm">
+                  <div class="crvtCableCommTitle">Câble de communication</div>
+                  <div class="crvtCableChoices">
+                    <button type="button" class="crvtCableChoice ${d.cableCommunication==='Oui'?'active':''}" data-crvt-comm="Oui">Oui</button>
+                    <button type="button" class="crvtCableChoice ${d.cableCommunication==='Non'?'active':''}" data-crvt-comm="Non">Non</button>
+                  </div>
+                </div>`;
+              host.appendChild(box);
+              const len=box.querySelector('#crvtCableLength');
+              const typ=box.querySelector('#crvtCableType');
+              if(len)len.addEventListener('input',()=>{audit.data.longueurCable=len.value; if(audit.status==='Terminé')audit.status='Brouillon'; save();});
+              if(typ)typ.addEventListener('change',()=>{audit.data.typeCable=typ.value; if(audit.status==='Terminé')audit.status='Brouillon'; save();});
+              box.querySelectorAll('[data-crvt-comm]').forEach(btn=>btn.addEventListener('click',()=>{
+                audit.data.cableCommunication=btn.dataset.crvtComm;
+                if(audit.status==='Terminé')audit.status='Brouillon';
+                save();
+                box.querySelectorAll('[data-crvt-comm]').forEach(b=>b.classList.toggle('active',b===btn));
+              }));
+            }
+
+            const oldFollow=window.renderFollowups;
+            if(typeof oldFollow==='function'){
+              window.renderFollowups=function(){oldFollow.apply(this,arguments);cableFields();};
+            }
+
+            const oldReport=window.report;
+            if(typeof oldReport==='function'){
+              window.report=function(){
+                let out=oldReport.apply(this,arguments);
+                const d=audit.data||{};
+                const rows=[];
+                if(String(d.longueurCable||'').trim()) rows.push(`<div class="techRow"><div class="techLabel">Mesure du cheminement (m)</div><div class="techValue">${esc(d.longueurCable)} m</div></div>`);
+                if(String(d.typeCable||'').trim()) rows.push(`<div class="techRow"><div class="techLabel">Type de câble</div><div class="techValue">${esc(d.typeCable)}</div></div>`);
+                if(String(d.cableCommunication||'').trim()) rows.push(`<div class="techRow"><div class="techLabel">Câble de communication</div><div class="techValue">${esc(d.cableCommunication)}</div></div>`);
+                if(rows.length) out=out.replace('<div class="techTable">','<div class="techTable">'+rows.join(''));
+                return out;
+              };
+            }
+
+            cableFields();
+          })();
+          </script>
+          '''
+
+          html = html.replace('</body>', patch + '\n</body>')
+          p.write_text(html, encoding='utf-8')
+          print('Patch injected into gh-pages/index.html')
+          PY
+
+          git config user.name "CRVT Bot"
+          git config user.email "crvt-bot@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "CRVT: add cable measurement and communication fields"
+            git push origin gh-pages
+          fi
