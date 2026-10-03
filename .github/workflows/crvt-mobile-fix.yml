@@ -1,0 +1,63 @@
+name: CRVT mobile photo picker fix
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-gh-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout published branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Patch photo picker
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          pattern = r"function picker\(sec,mode\)\{.*?\}\s*function addPhoto"
+          m = re.search(pattern, s, re.S)
+          if not m:
+              print('Picker already patched or function not found')
+              raise SystemExit(0)
+
+          replacement = r'''function picker(sec,mode){
+            const oldInput=document.getElementById('crvtPhotoPicker');
+            if(oldInput) oldInput.remove();
+            const i=document.createElement('input');
+            i.id='crvtPhotoPicker';
+            i.type='file';
+            i.accept='image/*';
+            i.setAttribute('aria-label',mode==='camera'?'Prendre une photo':'Choisir une photo');
+            if(mode==='camera') i.setAttribute('capture','environment');
+            i.style.position='fixed';i.style.left='50%';i.style.top='50%';i.style.width='1px';i.style.height='1px';i.style.opacity='0.01';i.style.zIndex='99999';
+            document.body.appendChild(i);
+            i.onchange=()=>{const f=i.files&&i.files[0];if(f)addPhoto(f,sec);setTimeout(()=>i.remove(),500)};
+            try{i.click()}catch(e){toast('Impossible d’ouvrir la galerie');i.remove()}
+          }
+          function addPhoto'''
+          p.write_text(s[:m.start()] + replacement + s[m.end()-len('function addPhoto'):], encoding='utf-8')
+
+      - name: Commit published fix
+        shell: bash
+        run: |
+          git config user.name "CRVT Bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No patch needed"
+          else
+            git add index.html
+            git commit -m "Fix CRVT mobile photo picker"
+            git push origin gh-pages
+          fi
