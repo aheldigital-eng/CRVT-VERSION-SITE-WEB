@@ -19,8 +19,7 @@ jobs:
           fetch-depth: 1
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Add PWA files and registration
-        shell: bash
+      - name: Add PWA files
         run: |
           cat > manifest.json <<'EOF'
           {
@@ -42,71 +41,58 @@ jobs:
           EOF
 
           cat > sw.js <<'EOF'
-          const CACHE = 'crvt-pwa-v2';
+          const CACHE = 'crvt-pwa-v3';
           const BASE = self.registration.scope;
-          const CORE = [BASE, BASE + 'manifest.json'];
-
           self.addEventListener('install', event => {
-            event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE)).then(() => self.skipWaiting()));
+            event.waitUntil(caches.open(CACHE).then(c => c.add(BASE)).then(() => self.skipWaiting()));
           });
-
           self.addEventListener('activate', event => {
             event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
           });
-
           self.addEventListener('fetch', event => {
             if (event.request.method !== 'GET') return;
             event.respondWith(fetch(event.request).then(response => {
               const copy = response.clone();
-              caches.open(CACHE).then(cache => cache.put(event.request, copy)).catch(() => {});
+              caches.open(CACHE).then(c => c.put(event.request, copy)).catch(() => {});
               return response;
             }).catch(() => caches.match(event.request).then(r => r || caches.match(BASE))));
           });
           EOF
 
-          if [ -f index.html ] && ! grep -q "crvt-pwa-registration" index.html; then
-            python3 - <<'PY'
-            from pathlib import Path
-            p = Path('index.html')
-            s = p.read_text(encoding='utf-8')
-            marker = '</body>'
-            block = "<!-- crvt-pwa-registration -->\n<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}</script>\n"
-            if marker in s:
-                s = s.replace(marker, block + marker, 1)
-                p.write_text(s, encoding='utf-8')
-            PY
-          fi
-
-          # Generate valid 192x192 and 512x512 PNG icons with Python stdlib only.
           python3 - <<'PY'
+          from pathlib import Path
           import struct, zlib, binascii
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = '</body>'
+          reg = "<!-- crvt-pwa-registration -->\n<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}</script>\n"
+          if 'crvt-pwa-registration' not in s and marker in s:
+              p.write_text(s.replace(marker, reg + marker, 1), encoding='utf-8')
 
           def chunk(kind, data):
               return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', binascii.crc32(kind + data) & 0xffffffff)
 
-          def png(path, size):
-              rows=[]
+          def make_png(path, size):
+              raw_rows=[]
               for y in range(size):
                   row=bytearray([0])
                   for x in range(size):
-                      # CRVT teal background with a simple white rounded-ish central mark.
-                      margin=size//8
-                      inside=(margin < x < size-margin and margin < y < size-margin)
-                      if inside:
-                          r,g,b=19,169,184
+                      m=size//8
+                      if m < x < size-m and m < y < size-m:
+                          row.extend((19,169,184))
                       else:
-                          r,g,b=11,110,158
-                      row.extend((r,g,b))
-                  rows.append(bytes(row))
-              raw=zlib.compress(b''.join(rows),9)
-              data=b'\x89PNG\r\n\x1a\n'
-              data+=chunk(b'IHDR',struct.pack('>IIBBBBB',size,size,8,2,0,0,0))
-              data+=chunk(b'IDAT',raw)
-              data+=chunk(b'IEND',b'')
-              open(path,'wb').write(data)
+                          row.extend((11,110,158))
+                  raw_rows.append(bytes(row))
+              raw=zlib.compress(b''.join(raw_rows),9)
+              out=b'\x89PNG\r\n\x1a\n'
+              out+=chunk(b'IHDR', struct.pack('>IIBBBBB', size, size, 8, 2, 0, 0, 0))
+              out+=chunk(b'IDAT', raw)
+              out+=chunk(b'IEND', b'')
+              Path(path).write_bytes(out)
 
-          png('icon-192.png',192)
-          png('icon-512.png',512)
+          make_png('icon-192.png', 192)
+          make_png('icon-512.png', 512)
           PY
 
       - name: Publish PWA
