@@ -22,35 +22,28 @@ jobs:
           path: source
           fetch-depth: 1
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Restore validated V7 and add requested cable fields
-        shell: python
+      - name: Restore validated V7 and add cable fields
         run: |
+          cp source/CRVT_DERNIERE_VERSION_VALIDEe_index-1.html index.html
+          python3 - <<'PY'
           from pathlib import Path
-          import shutil
-
-          src = Path('source/CRVT_DERNIERE_VERSION_VALIDEe_index-1.html')
-          dst = Path('index.html')
-          if not src.exists():
-              raise SystemExit('Validated V7 source file not found')
-          shutil.copyfile(src, dst)
-          s = dst.read_text(encoding='utf-8')
-
-          old_common = '''const common=[
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old='''const common=[
 ["puissance","Puissance souscrite","select:3 kVA|6 kVA|9 kVA|12 kVA|15 kVA|18 kVA|24 kVA|36 kVA|Autre"],["compteur","Type de Compteur","select:Monophasé|Triphasé|Autre"],
 ["divisionnaire","Installation d’un tableau divisionnaire","select:Oui|Non"],["typeborne","Type de borne","select:Monophasé|Triphasé|Autre"],
 ["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"]
 ];'''
-          new_common = '''const common=[
+          new='''const common=[
 ["puissance","Puissance souscrite","select:3 kVA|6 kVA|9 kVA|12 kVA|15 kVA|18 kVA|20 kVA|24 kVA|30 kVA|36 kVA|Autre"],["compteur","Type de Compteur","select:Monophasé|Triphasé|Autre"],
 ["divisionnaire","Installation d’un tableau divisionnaire","select:Oui|Non"],["typeborne","Type de borne","select:Monophasé|Triphasé|Autre"],
 ["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"],
 ["longueur","Longueur cheminement (m)"],["hauteur","Hauteur / profondeur (m)"],["typeCable","Type de câble","select:3G10|5G10"],["cableCommunication","Câble de communication","select:Oui|Non"]
 ];'''
-          if old_common not in s:
-              raise SystemExit('Validated V7 common field block not found')
-          s = s.replace(old_common, new_common, 1)
-
-          old_labels = '''const techLabels={
+          if old not in s:
+              raise SystemExit('common block not found')
+          s=s.replace(old,new,1)
+          old='''const techLabels={
  divisionnaire:"Installation d’un tableau divisionnaire",
  puissance:"Puissance souscrite",
  compteur:"Type de compteur",
@@ -58,7 +51,7 @@ jobs:
  environnement:"Environnement de la borne",
  position:"Positionnement de la borne"
 };'''
-          new_labels = '''const techLabels={
+          new='''const techLabels={
  divisionnaire:"Installation d’un tableau divisionnaire",
  puissance:"Puissance souscrite",
  compteur:"Type de compteur",
@@ -70,11 +63,11 @@ jobs:
  typeCable:"Type de câble",
  cableCommunication:"Câble de communication"
 };'''
-          if old_labels not in s:
-              raise SystemExit('Validated V7 PDF labels block not found')
-          s = s.replace(old_labels, new_labels, 1)
-
-          dst.write_text(s, encoding='utf-8')
+          if old not in s:
+              raise SystemExit('techLabels block not found')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          PY
       - name: Publish
         run: |
           git config user.name 'github-actions[bot]'
