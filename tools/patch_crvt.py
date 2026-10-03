@@ -51,5 +51,17 @@ if old not in s:
     raise SystemExit('mobile annotation CSS target not found')
 s = s.replace(old, new, 1)
 
+# 8) Remove ONLY the obsolete "Prévoir un tableau supplémentaire" block.
+# Keep the existing photo/annotation system and every other working tableau control unchanged.
+old = '}else if(audit.data.place==="Non"){\nt.innerHTML=`<div class="item"><b>⚠️ Prévoir un tableau supplémentaire</b><p>Ajouter une photo du tableau existant et l’annoter.</p>${photos("tableau")}</div>`;\n}else t.innerHTML="";'
+new = '}else t.innerHTML="";'
+if old in s:
+    s = s.replace(old, new, 1)
+
+# 9) Prevent the obsolete PLACE DISPONIBLE fallback page from creating an extra PDF page.
+old = ' if(!blocks.length){\n   pages.push(`<section class="page reportPage">${pageHeader(reportPageNo++)}<h1>TABLEAU ÉLECTRIQUE</h1><div class="blueRule"></div><div class="bigAnswer"><span>PLACE DISPONIBLE DANS LE TABLEAU</span><b>${esc(place||"Non renseigné")}</b></div>${place==="Non"?`<div class="recommendation"><b>TABLEAU SUPPLÉMENTAIRE À PRÉVOIR</b></div>`:""}${noteHTML("tableau")}</section>`);\n }'
+if old in s:
+    s = s.replace(old, '', 1)
+
 p.write_text(s, encoding='utf-8')
 print('CRVT patch applied:', len(s), 'bytes')
