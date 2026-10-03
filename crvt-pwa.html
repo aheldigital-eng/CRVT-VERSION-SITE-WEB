@@ -11,31 +11,28 @@
 <style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f1f5f9}iframe{display:block;width:100%;height:100%;border:0;background:#f1f5f9}</style>
 </head>
 <body>
-<iframe id="crvt" src="./index-19.html" title="CRVT"></iframe>
+<iframe id="crvt" src="./index.html" title="CRVT"></iframe>
 <script>
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}
 const frame=document.getElementById('crvt');
-function exposeTableauPhoto(){
+function patchTableau(){
   try{
-    const d=frame.contentDocument;
-    if(!d)return false;
+    const w=frame.contentWindow,d=frame.contentDocument;
+    if(!w||!d||!w.audit||!w.renderFollowups)return false;
+    w.audit.data.place='Oui';
+    w.renderFollowups();
     const labels=[...d.querySelectorAll('label')];
     const label=labels.find(x=>(x.textContent||'').includes('Place disponible dans le tableau'));
-    if(!label)return false;
-    const box=label.parentElement;
-    const select=box&&box.querySelector('select');
-    if(select && select.value!=='Oui'){
-      select.value='Oui';
-      select.dispatchEvent(new Event('input',{bubbles:true}));
-      select.dispatchEvent(new Event('change',{bubbles:true}));
+    if(label){
+      const box=label.parentElement;
+      if(box)box.style.display='none';
     }
-    if(box)box.style.display='none';
-    return true;
+    return !!d.querySelector('#tableauFollow .photoActions');
   }catch(e){return false;}
 }
 frame.addEventListener('load',()=>{
-  let n=0;
-  const t=setInterval(()=>{if(exposeTableauPhoto()||++n>40)clearInterval(t)},250);
+ let n=0;
+ const t=setInterval(()=>{if(patchTableau()||++n>50)clearInterval(t)},250);
 });
 </script>
 </body>
