@@ -15,7 +15,7 @@ html,body{margin:0;padding:0;width:100%;min-height:100%;background:#f1f5f9}
 <script>
 (async()=>{
   try{
-    const r=await fetch('CRVT_DERNIERE_VERSION_VALIDEe_index-1.html',{cache:'no-store'});
+    const r=await fetch('CRVT_DERNIERE_VERSION_VALIDEe_index-1.html?v=20261003-annotfix2',{cache:'no-store'});
     if(!r.ok) throw new Error('HTTP '+r.status);
     const s=await r.text();
     const doc=new DOMParser().parseFromString(s,'text/html');
@@ -24,133 +24,159 @@ html,body{margin:0;padding:0;width:100%;min-height:100%;background:#f1f5f9}
     document.close();
 
     const style=document.createElement('style');
-    style.id='crvt-annotation-mobile-fix';
+    style.id='crvt-annotation-mobile-fix-v2';
     style.textContent=`
-      /* ===== CRVT — interface annotation mobile ===== */
-      body:has(.modal .tools){overflow:hidden!important;padding:0!important}
-      body:has(.modal .tools)>header,
-      body:has(.modal .tools)>#quickNav{
-        display:none!important;
-        visibility:hidden!important;
-        pointer-events:none!important;
-      }
-      body:has(.modal .tools) .modal,
-      body:has(.modal .tools) .crvt-annotator{
-        position:fixed!important;
-        inset:0!important;
-        width:100vw!important;
-        height:100dvh!important;
-        max-width:none!important;
-        max-height:none!important;
-        margin:0!important;
-        padding:8px!important;
+      /* CRVT — annotation mobile : l'éditeur prend réellement tout l'écran */
+      html.crvt-annotation-open,body.crvt-annotation-open{overflow:hidden!important}
+      body.crvt-annotation-open>header,
+      body.crvt-annotation-open>#quickNav{display:none!important!important;visibility:hidden!important;pointer-events:none!important}
+
+      /* Le modal d'annotation doit passer AU-DESSUS du header et de la navigation */
+      .crvt-annotation-overlay{
+        position:fixed!important;inset:0!important;
+        width:100vw!important;height:100dvh!important;
+        max-width:none!important;max-height:none!important;
+        margin:0!important;padding:10px!important;
+        background:rgba(15,23,42,.96)!important;
         z-index:2147483647!important;
-        display:block!important;
-        overflow:hidden!important;
-        pointer-events:auto!important;
+        display:block!important;overflow:hidden!important;
+        box-sizing:border-box!important;
       }
-      body:has(.modal .tools) .modalbox{
-        width:100%!important;
-        height:100%!important;
-        max-height:none!important;
-        min-height:0!important;
-        display:flex!important;
-        flex-direction:column!important;
-        gap:8px!important;
-        overflow:hidden!important;
+      .crvt-annotation-overlay .modalbox{
+        position:relative!important;width:100%!important;height:100%!important;
+        max-width:none!important;max-height:none!important;min-height:0!important;
+        margin:0!important;padding:0!important;
+        display:flex!important;flex-direction:column!important;
+        gap:8px!important;overflow:hidden!important;
       }
-      body:has(.modal .tools) .modalbox>.tools{
+
+      /* Bandeau d'outils : toutes les commandes sont dans une zone dédiée,
+         avec défilement interne si nécessaire, jamais derrière le header. */
+      .crvt-annotation-overlay .tools,
+      .crvt-annotation-tools{
         flex:0 0 auto!important;
+        width:100%!important;max-width:none!important;
+        max-height:48dvh!important;
+        overflow-y:auto!important;overflow-x:hidden!important;
         display:grid!important;
-        grid-template-columns:repeat(4,minmax(0,1fr))!important;
+        grid-template-columns:repeat(3,minmax(0,1fr))!important;
         gap:7px!important;
-        width:100%!important;
-        max-height:42dvh!important;
-        overflow-y:auto!important;
-        overflow-x:hidden!important;
+        padding:6px!important;margin:0!important;
+        background:#f8fafc!important;border-radius:14px!important;
+        box-sizing:border-box!important;
         align-content:start!important;
-        padding:2px!important;
-        margin:0!important;
-        background:#f8fafc!important;
-        border-radius:12px!important;
-        position:relative!important;
-        z-index:5!important;
         -webkit-overflow-scrolling:touch!important;
-        touch-action:pan-y!important;
+        overscroll-behavior:contain!important;
+        position:relative!important;z-index:2147483646!important;
       }
-      body:has(.modal .tools) .modalbox>.tools .btn,
-      body:has(.modal .tools) .modalbox>.tools select,
-      body:has(.modal .tools) .modalbox>.tools label{
-        min-width:0!important;
-        width:100%!important;
-        margin:0!important;
-        pointer-events:auto!important;
-        touch-action:manipulation!important;
-        position:relative!important;
-        z-index:10!important;
+      .crvt-annotation-overlay .tools>* ,
+      .crvt-annotation-tools>*{
+        min-width:0!important;width:100%!important;margin:0!important;
+        box-sizing:border-box!important;pointer-events:auto!important;
+        touch-action:manipulation!important;position:relative!important;z-index:3!important;
       }
-      body:has(.modal .tools) .modalbox>.tools .btn{
-        min-height:48px!important;
-        padding:9px 6px!important;
-        font-size:14px!important;
-        white-space:normal!important;
-        line-height:1.15!important;
-        cursor:pointer!important;
+      .crvt-annotation-overlay .tools .btn,
+      .crvt-annotation-tools .btn{
+        min-height:50px!important;padding:9px 5px!important;
+        font-size:14px!important;line-height:1.15!important;
+        white-space:normal!important;cursor:pointer!important;
+        border-radius:12px!important;
       }
-      body:has(.modal .tools) .modalbox>.tools select{
-        min-height:48px!important;
-        padding:8px 6px!important;
-        font-size:14px!important;
-        background:#fff!important;
+      .crvt-annotation-overlay .tools select,
+      .crvt-annotation-tools select{
+        min-height:50px!important;width:100%!important;
+        padding:8px 6px!important;font-size:14px!important;
+        background:#fff!important;border-radius:12px!important;
       }
-      body:has(.modal .tools) .modalbox>.tools .btn.active{
-        outline:3px solid #0b6e9e!important;
-        outline-offset:-3px!important;
-        background:#e4f5fb!important;
-        color:#075a82!important;
+      .crvt-annotation-overlay .tools .btn.active,
+      .crvt-annotation-tools .btn.active{
+        outline:3px solid #0b6e9e!important;outline-offset:-3px!important;
+        background:#e4f5fb!important;color:#075a82!important;
       }
-      body:has(.modal .tools) .canvaswrap{
-        flex:1 1 auto!important;
-        min-height:120px!important;
-        width:100%!important;
-        overflow:hidden!important;
-        position:relative!important;
-        z-index:1!important;
+      .crvt-annotation-overlay .canvaswrap{
+        flex:1 1 auto!important;min-height:120px!important;
+        width:100%!important;max-width:none!important;
+        overflow:hidden!important;position:relative!important;
+        background:#fff!important;border-radius:12px!important;
+        z-index:1!important;display:flex!important;
+        align-items:center!important;justify-content:center!important;
       }
-      body:has(.modal .tools) .canvaswrap canvas{
-        pointer-events:auto!important;
-        touch-action:none!important;
-        max-width:100%!important;
-        max-height:100%!important;
+      .crvt-annotation-overlay .canvaswrap canvas{
+        max-width:100%!important;max-height:100%!important;
+        width:auto!important;height:auto!important;
+        touch-action:none!important;pointer-events:auto!important;
       }
-      body:has(.modal .tools) .modalbox>.small{
-        flex:0 0 auto!important;
-        max-height:58px!important;
-        overflow:auto!important;
-        margin:0!important;
-      }
+      .crvt-annotation-overlay .small{flex:0 0 auto!important;max-height:70px!important;overflow:auto!important}
       @media(max-width:620px){
-        body:has(.modal .tools) .modalbox>.tools{grid-template-columns:repeat(3,minmax(0,1fr))!important;max-height:45dvh!important}
-        body:has(.modal .tools) .modalbox>.tools .btn{font-size:13px!important;min-height:46px!important}
+        .crvt-annotation-overlay{padding:8px!important}
+        .crvt-annotation-overlay .tools,
+        .crvt-annotation-tools{grid-template-columns:repeat(3,minmax(0,1fr))!important;max-height:48dvh!important}
       }
       @media(min-width:621px){
-        body:has(.modal .tools) .modalbox>.tools{grid-template-columns:repeat(6,minmax(0,1fr))!important;max-height:32dvh!important}
+        .crvt-annotation-overlay .tools,
+        .crvt-annotation-tools{grid-template-columns:repeat(6,minmax(0,1fr))!important;max-height:34dvh!important}
       }
     `;
     document.head.appendChild(style);
 
-    function updateAnnotationState(){
-      const modals=[...document.querySelectorAll('.modal')];
-      const m=modals.find(x=>x.querySelector('.tools'));
-      const open=!!m && (()=>{
-        const cs=getComputedStyle(m);
-        return cs.display!=='none' && cs.visibility!=='hidden' && parseFloat(cs.opacity||'1')>0;
-      })();
-      if(m)m.classList.toggle('crvt-annotator',open);
-      document.body.classList.toggle('crvt-annotation-open',open);
+    function visible(el){
+      if(!el)return false;
+      const r=el.getBoundingClientRect(),cs=getComputedStyle(el);
+      return cs.display!=='none' && cs.visibility!=='hidden' && parseFloat(cs.opacity||'1')>0 && r.width>0 && r.height>0;
     }
-    updateAnnotationState();
-    new MutationObserver(updateAnnotationState).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class','hidden']});
+
+    function fixAnnotationUI(){
+      const candidates=[...document.querySelectorAll('.modal')].filter(visible);
+      let modal=candidates.find(m=>m.querySelector('.tools'))||null;
+      let tools=modal?.querySelector('.tools')||null;
+
+      /* Secours si la version source utilise le bandeau d'outils sans classe modal détectable. */
+      if(!tools){
+        const all=[...document.querySelectorAll('.tools')].filter(visible);
+        tools=all.find(t=>/Rectangle|Texte|Annuler|Enregistrer/.test(t.innerText||''))||null;
+        if(tools){
+          modal=tools.closest('.modal')||tools.parentElement;
+          tools.classList.add('crvt-annotation-tools');
+        }
+      }
+      const open=!!tools && visible(tools);
+      document.documentElement.classList.toggle('crvt-annotation-open',open);
+      document.body.classList.toggle('crvt-annotation-open',open);
+      if(!open)return;
+
+      if(modal){
+        modal.classList.add('crvt-annotation-overlay');
+        modal.style.setProperty('position','fixed','important');
+        modal.style.setProperty('inset','0','important');
+        modal.style.setProperty('z-index','2147483647','important');
+        modal.style.setProperty('width','100vw','important');
+        modal.style.setProperty('height','100dvh','important');
+        modal.style.setProperty('max-width','none','important');
+        modal.style.setProperty('max-height','none','important');
+        modal.style.setProperty('overflow','hidden','important');
+      }
+
+      document.querySelectorAll('header,#quickNav').forEach(el=>{
+        el.style.setProperty('display','none','important');
+        el.style.setProperty('visibility','hidden','important');
+        el.style.setProperty('pointer-events','none','important');
+      });
+
+      tools.classList.add('crvt-annotation-tools');
+      tools.style.setProperty('display','grid','important');
+      tools.style.setProperty('overflow-y','auto','important');
+      tools.style.setProperty('overflow-x','hidden','important');
+
+      /* Rendre toutes les commandes réellement accessibles au toucher. */
+      tools.querySelectorAll('button,.btn,select,input,label').forEach(el=>{
+        el.style.setProperty('pointer-events','auto','important');
+        el.style.setProperty('touch-action','manipulation','important');
+      });
+    }
+
+    fixAnnotationUI();
+    new MutationObserver(fixAnnotationUI).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class','hidden','aria-hidden']});
+    setInterval(fixAnnotationUI,300);
   }catch(e){
     const b=document.getElementById('boot');
     if(b)b.textContent='Erreur de chargement CRVT : '+e.message;
