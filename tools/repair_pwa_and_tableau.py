@@ -6,8 +6,9 @@ s = p.read_text(encoding='utf-8')
 original = s
 
 # Repair the malformed style nesting from the previous header/PWA patch.
+# V12 was missing its closing tag before V19; V14 also left a duplicate close.
 s, n1 = re.subn(
-    r'(</style>\s*\n\s*)<style id="crvt-v19-max-design">',
+    r'(@media print\{body\{padding-top:0 !important;\}header\{position:static !important;display:none !important;\}#quickNav\{display:none !important;\}\}\s*)<style id="crvt-v19-max-design">',
     r'\1</style>\n<style id="crvt-v19-max-design">',
     s,
     count=1,
