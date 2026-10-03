@@ -28,7 +28,7 @@ label{display:block;font-weight:700;margin:9px 0 5px}input,select,textarea{width
 @media print{#quickNav{display:none!important}}
 .nav{display:flex;gap:8px;position:sticky;bottom:0;background:#f1f5f9;padding:9px 0;z-index:15}.nav button{flex:1}
 .modal{position:fixed;inset:0;background:#000d;z-index:100;padding:8px}.modalbox{height:100%;display:flex;flex-direction:column;gap:8px}.canvaswrap{background:#fff;flex:1;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:0}.canvaswrap canvas{display:block;width:auto!important;height:auto!important;max-width:100%;max-height:100%;touch-action:none;object-fit:contain}
-.tools{display:flex;gap:6px;flex-wrap:wrap}.tools .btn{flex:none}
+.tools{display:flex;gap:6px;flex-wrap:wrap;max-height:34vh;overflow-y:auto;padding-right:2px;align-content:flex-start}.tools .btn{flex:none}.tools select{flex:none;min-height:44px}.tools::-webkit-scrollbar{width:6px}.tools::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px}
 .historyMeta{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}.statusBadge{display:inline-block;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:800;background:#e2e8f0;color:#334155}.statusBadge.done{background:#dcfce7;color:#166534}.draftBar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 12px;border:1px solid #dbe4ec;background:#f8fafc;border-radius:11px;margin-bottom:10px}.smallMuted{font-size:12px;color:#64748b}.saveState{font-weight:700;color:#166534}.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 14px;border-radius:9px;z-index:200}
 @media(max-width:620px){.grid{grid-template-columns:1fr}.photoGrid{grid-template-columns:1fr}.choice{grid-template-columns:1fr 1fr 1fr}}
 @media print{
@@ -237,7 +237,7 @@ const ENSIO_LOGO='ensio-logo-transparent.png';
 const common=[
 ["puissance","Puissance souscrite","select:3 kVA|6 kVA|9 kVA|12 kVA|15 kVA|18 kVA|24 kVA|36 kVA|Autre"],["compteur","Type de Compteur","select:Monophasé|Triphasé|Autre"],
 ["divisionnaire","Installation d’un tableau divisionnaire","select:Oui|Non"],["typeborne","Type de borne","select:Monophasé|Triphasé|Autre"],
-["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"]
+["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"],["longueurCable","Mesure du cheminement (m)","number"],["typeCable","Type de câble","select:3G10|5G10"],["cableCommunication","Câble de communication","select:Oui|Non"]
 ];
 const modules={
 tableau:[
@@ -402,7 +402,7 @@ function updateQuickNav(){
   const photoCount=key=>(audit.photos?.[key]||[]).length;
   const stateFor=key=>{
     if(key==="general") return audit.client.trim()&&audit.date&&audit.auditeur.trim()?"ok":"warn";
-    if(key==="infos") return audit.data.commentaire||audit.data.place||audit.data.puissance||audit.data.compteur||audit.data.borne||audit.data.environnement||audit.data.position?"ok":"warn";
+    if(key==="infos") return audit.data.commentaire||audit.data.place||audit.data.puissance||audit.data.compteur||audit.data.borne||audit.data.environnement||audit.data.position||audit.data.longueurCable||audit.data.typeCable||audit.data.cableCommunication?"ok":"warn";
     if(key==="modules") return Object.values(audit.sections).some(Boolean)?"ok":"warn";
     if(key==="synthese") return validateAudit().some(x=>x.type==="error")?"warn":"ok";
      if(key==="tableau") return !audit.sections.tableau?"warn":(audit.data.place && photoCount("tableau")?"ok":"warn");
@@ -1315,7 +1315,10 @@ puissance:"Puissance souscrite",
 compteur:"Type de compteur",
 typeborne:"Type de borne",
 environnement:"Environnement de la borne",
-position:"Positionnement de la borne"
+position:"Positionnement de la borne",
+longueurCable:"Mesure du cheminement (m)",
+typeCable:"Type de câble",
+cableCommunication:"Câble de communication"
 };
 
 let pages=[];
@@ -1621,88 +1624,6 @@ header{position:fixed !important;top:0 !important;left:0 !important;right:0 !imp
   update();
 })();
 <\/script>
-<!-- CRVT V7+ cable fields patch -->
-<style id="crvt-v7-cable-fields">
-.crvtCableExtra{margin-top:12px;border:1px solid #dbe7ee;border-radius:15px;padding:13px;background:linear-gradient(180deg,#fff,#f7fbfc)}
-.crvtCableExtra h3{margin:0 0 8px;font-size:15px;color:#0b496b}
-.crvtCableGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.crvtCableComm{margin-top:10px;padding:10px;border:1px solid #dbe7ee;border-radius:12px;background:#fbfdff}
-.crvtCableCommTitle{font-size:13px;font-weight:800;color:#405365;margin-bottom:7px}
-.crvtCableChoices{display:flex;gap:8px;flex-wrap:wrap}
-.crvtCableChoice{border:1px solid #cbd5e1;background:#f8fafc;border-radius:10px;padding:10px 15px;font-weight:800;cursor:pointer}
-.crvtCableChoice.active{border-color:#0b6e9e;background:#e5f7fa;box-shadow:0 0 0 2px #0b6e9e22;color:#0b5d86}
-@media(max-width:620px){.crvtCableGrid{grid-template-columns:1fr}}
-</style>
-<script>
-(function(){
-  'use strict';
-  function cableFields(){
-    const host=document.getElementById('cheminementFollow');
-    if(!host)return;
-    const old=host.querySelector('.crvtCableExtra');
-    if(old)old.remove();
-    const d=audit.data||{};
-    const box=document.createElement('div');
-    box.className='crvtCableExtra';
-    box.innerHTML=`
-      <h3>⚡ Caractéristiques du câble</h3>
-      <div class="crvtCableGrid">
-        <div>
-          <label>Mesure du cheminement (m)</label>
-          <input id="crvtCableLength" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ex. 12,5" value="${esc(d.longueurCable||'')}">
-        </div>
-        <div>
-          <label>Type de câble</label>
-          <select id="crvtCableType">
-            <option value="">Sélectionner…</option>
-            <option value="3G10" ${d.typeCable==='3G10'?'selected':''}>3G10</option>
-            <option value="5G10" ${d.typeCable==='5G10'?'selected':''}>5G10</option>
-          </select>
-        </div>
-      </div>
-      <div class="crvtCableComm">
-        <div class="crvtCableCommTitle">Câble de communication</div>
-        <div class="crvtCableChoices">
-          <button type="button" class="crvtCableChoice ${d.cableCommunication==='Oui'?'active':''}" data-crvt-comm="Oui">Oui</button>
-          <button type="button" class="crvtCableChoice ${d.cableCommunication==='Non'?'active':''}" data-crvt-comm="Non">Non</button>
-        </div>
-      </div>`;
-    host.appendChild(box);
-    const len=box.querySelector('#crvtCableLength');
-    const typ=box.querySelector('#crvtCableType');
-    if(len)len.addEventListener('input',()=>{audit.data.longueurCable=len.value; if(audit.status==='Terminé')audit.status='Brouillon'; save();});
-    if(typ)typ.addEventListener('change',()=>{audit.data.typeCable=typ.value; if(audit.status==='Terminé')audit.status='Brouillon'; save();});
-    box.querySelectorAll('[data-crvt-comm]').forEach(btn=>btn.addEventListener('click',()=>{
-      audit.data.cableCommunication=btn.dataset.crvtComm;
-      if(audit.status==='Terminé')audit.status='Brouillon';
-      save();
-      box.querySelectorAll('[data-crvt-comm]').forEach(b=>b.classList.toggle('active',b===btn));
-    }));
-  }
-
-  const oldFollow=window.renderFollowups;
-  if(typeof oldFollow==='function'){
-    window.renderFollowups=function(){oldFollow.apply(this,arguments);cableFields();};
-  }
-
-  const oldReport=window.report;
-  if(typeof oldReport==='function'){
-    window.report=function(){
-      let out=oldReport.apply(this,arguments);
-      const d=audit.data||{};
-      const rows=[];
-      if(String(d.longueurCable||'').trim()) rows.push(`<div class="techRow"><div class="techLabel">Mesure du cheminement (m)</div><div class="techValue">${esc(d.longueurCable)} m</div></div>`);
-      if(String(d.typeCable||'').trim()) rows.push(`<div class="techRow"><div class="techLabel">Type de câble</div><div class="techValue">${esc(d.typeCable)}</div></div>`);
-      if(String(d.cableCommunication||'').trim()) rows.push(`<div class="techRow"><div class="techLabel">Câble de communication</div><div class="techValue">${esc(d.cableCommunication)}</div></div>`);
-      if(rows.length) out=out.replace('<div class="techTable">','<div class="techTable">'+rows.join(''));
-      return out;
-    };
-  }
-
-  cableFields();
-})();
-</script>
-
 </body></html>`;
 // Affichage dans la même page : aucun onglet about:srcdoc et retour CRVT toujours possible.
 const oldOverlay=document.getElementById("crvtReportOverlay");
@@ -2019,86 +1940,4 @@ migrateStorage().then(()=>{history();});
   update();
 })();
 </script>
-<!-- CRVT V7+ cable fields patch -->
-<style id="crvt-v7-cable-fields">
-.crvtCableExtra{margin-top:12px;border:1px solid #dbe7ee;border-radius:15px;padding:13px;background:linear-gradient(180deg,#fff,#f7fbfc)}
-.crvtCableExtra h3{margin:0 0 8px;font-size:15px;color:#0b496b}
-.crvtCableGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.crvtCableComm{margin-top:10px;padding:10px;border:1px solid #dbe7ee;border-radius:12px;background:#fbfdff}
-.crvtCableCommTitle{font-size:13px;font-weight:800;color:#405365;margin-bottom:7px}
-.crvtCableChoices{display:flex;gap:8px;flex-wrap:wrap}
-.crvtCableChoice{border:1px solid #cbd5e1;background:#f8fafc;border-radius:10px;padding:10px 15px;font-weight:800;cursor:pointer}
-.crvtCableChoice.active{border-color:#0b6e9e;background:#e5f7fa;box-shadow:0 0 0 2px #0b6e9e22;color:#0b5d86}
-@media(max-width:620px){.crvtCableGrid{grid-template-columns:1fr}}
-</style>
-<script>
-(function(){
-  'use strict';
-  function cableFields(){
-    const host=document.getElementById('cheminementFollow');
-    if(!host)return;
-    const old=host.querySelector('.crvtCableExtra');
-    if(old)old.remove();
-    const d=audit.data||{};
-    const box=document.createElement('div');
-    box.className='crvtCableExtra';
-    box.innerHTML=`
-      <h3>⚡ Caractéristiques du câble</h3>
-      <div class="crvtCableGrid">
-        <div>
-          <label>Mesure du cheminement (m)</label>
-          <input id="crvtCableLength" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ex. 12,5" value="${esc(d.longueurCable||'')}">
-        </div>
-        <div>
-          <label>Type de câble</label>
-          <select id="crvtCableType">
-            <option value="">Sélectionner…</option>
-            <option value="3G10" ${d.typeCable==='3G10'?'selected':''}>3G10</option>
-            <option value="5G10" ${d.typeCable==='5G10'?'selected':''}>5G10</option>
-          </select>
-        </div>
-      </div>
-      <div class="crvtCableComm">
-        <div class="crvtCableCommTitle">Câble de communication</div>
-        <div class="crvtCableChoices">
-          <button type="button" class="crvtCableChoice ${d.cableCommunication==='Oui'?'active':''}" data-crvt-comm="Oui">Oui</button>
-          <button type="button" class="crvtCableChoice ${d.cableCommunication==='Non'?'active':''}" data-crvt-comm="Non">Non</button>
-        </div>
-      </div>`;
-    host.appendChild(box);
-    const len=box.querySelector('#crvtCableLength');
-    const typ=box.querySelector('#crvtCableType');
-    if(len)len.addEventListener('input',()=>{audit.data.longueurCable=len.value; if(audit.status==='Terminé')audit.status='Brouillon'; save();});
-    if(typ)typ.addEventListener('change',()=>{audit.data.typeCable=typ.value; if(audit.status==='Terminé')audit.status='Brouillon'; save();});
-    box.querySelectorAll('[data-crvt-comm]').forEach(btn=>btn.addEventListener('click',()=>{
-      audit.data.cableCommunication=btn.dataset.crvtComm;
-      if(audit.status==='Terminé')audit.status='Brouillon';
-      save();
-      box.querySelectorAll('[data-crvt-comm]').forEach(b=>b.classList.toggle('active',b===btn));
-    }));
-  }
-
-  const oldFollow=window.renderFollowups;
-  if(typeof oldFollow==='function'){
-    window.renderFollowups=function(){oldFollow.apply(this,arguments);cableFields();};
-  }
-
-  const oldReport=window.report;
-  if(typeof oldReport==='function'){
-    window.report=function(){
-      let out=oldReport.apply(this,arguments);
-      const d=audit.data||{};
-      const rows=[];
-      if(String(d.longueurCable||'').trim()) rows.push(`<div class="techRow"><div class="techLabel">Mesure du cheminement (m)</div><div class="techValue">${esc(d.longueurCable)} m</div></div>`);
-      if(String(d.typeCable||'').trim()) rows.push(`<div class="techRow"><div class="techLabel">Type de câble</div><div class="techValue">${esc(d.typeCable)}</div></div>`);
-      if(String(d.cableCommunication||'').trim()) rows.push(`<div class="techRow"><div class="techLabel">Câble de communication</div><div class="techValue">${esc(d.cableCommunication)}</div></div>`);
-      if(rows.length) out=out.replace('<div class="techTable">','<div class="techTable">'+rows.join(''));
-      return out;
-    };
-  }
-
-  cableFields();
-})();
-</script>
-
 </body></html>
