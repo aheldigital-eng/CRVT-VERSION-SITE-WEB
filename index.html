@@ -4,58 +4,158 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b6e9e">
-<title>CRVT</title>
+<title>CRVT — Compte rendu de visite technique</title>
 <style>
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f1f5f9}
-#appframe{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:#f1f5f9}
+html,body{margin:0;padding:0;width:100%;min-height:100%;background:#f1f5f9}
+#boot{padding:24px;font:16px Arial;color:#173247}
 </style>
 </head>
 <body>
-<iframe id="appframe" src="CRVT_DERNIERE_VERSION_VALIDEe_index-1.html" title="CRVT"></iframe>
+<div id="boot">Chargement de CRVT…</div>
 <script>
-const frame=document.getElementById('appframe');
-function installFix(){
+(async()=>{
   try{
-    const d=frame.contentDocument;
-    if(!d||!d.body)return;
-    if(d.getElementById('crvt-annotation-fix'))return;
-    const st=d.createElement('style');st.id='crvt-annotation-fix';
-    st.textContent=`
-      /* Annotation : le bandeau principal et la navigation ne doivent jamais recouvrir les outils */
-      .modal.crvtAnnotationFix{
-        position:fixed!important;inset:0!important;z-index:2147483647!important;
-        width:100vw!important;height:100dvh!important;margin:0!important;padding:8px!important;
-        overflow:hidden!important;background:rgba(0,0,0,.87)!important;
+    const r=await fetch('CRVT_DERNIERE_VERSION_VALIDEe_index-1.html',{cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const s=await r.text();
+    const doc=new DOMParser().parseFromString(s,'text/html');
+    document.open();
+    document.write(doc.documentElement.outerHTML);
+    document.close();
+
+    const style=document.createElement('style');
+    style.id='crvt-annotation-mobile-fix';
+    style.textContent=`
+      /* ===== CRVT — interface annotation mobile ===== */
+      body:has(.modal .tools){overflow:hidden!important;padding:0!important}
+      body:has(.modal .tools)>header,
+      body:has(.modal .tools)>#quickNav{
+        display:none!important;
+        visibility:hidden!important;
+        pointer-events:none!important;
       }
-      .modal.crvtAnnotationFix .modalbox{
-        width:100%!important;height:100%!important;max-height:none!important;
-        display:flex!important;flex-direction:column!important;gap:8px!important;
+      body:has(.modal .tools) .modal,
+      body:has(.modal .tools) .crvt-annotator{
+        position:fixed!important;
+        inset:0!important;
+        width:100vw!important;
+        height:100dvh!important;
+        max-width:none!important;
+        max-height:none!important;
+        margin:0!important;
+        padding:8px!important;
+        z-index:2147483647!important;
+        display:block!important;
+        overflow:hidden!important;
+        pointer-events:auto!important;
       }
-      .modal.crvtAnnotationFix .tools{
-        position:relative!important;z-index:2147483648!important;
-        flex:0 0 auto!important;display:flex!important;flex-wrap:wrap!important;
-        gap:6px!important;max-height:42vh!important;overflow-y:auto!important;
-        padding:2px!important;background:#0000!important;
+      body:has(.modal .tools) .modalbox{
+        width:100%!important;
+        height:100%!important;
+        max-height:none!important;
+        min-height:0!important;
+        display:flex!important;
+        flex-direction:column!important;
+        gap:8px!important;
+        overflow:hidden!important;
+      }
+      body:has(.modal .tools) .modalbox>.tools{
+        flex:0 0 auto!important;
+        display:grid!important;
+        grid-template-columns:repeat(4,minmax(0,1fr))!important;
+        gap:7px!important;
+        width:100%!important;
+        max-height:42dvh!important;
+        overflow-y:auto!important;
+        overflow-x:hidden!important;
+        align-content:start!important;
+        padding:2px!important;
+        margin:0!important;
+        background:#f8fafc!important;
+        border-radius:12px!important;
+        position:relative!important;
+        z-index:5!important;
         -webkit-overflow-scrolling:touch!important;
+        touch-action:pan-y!important;
       }
-      .modal.crvtAnnotationFix .tools>*{position:relative!important;z-index:2147483649!important;pointer-events:auto!important;touch-action:manipulation!important;}
-      .modal.crvtAnnotationFix .tools button{cursor:pointer!important;-webkit-tap-highlight-color:transparent!important;}
-      .modal.crvtAnnotationFix .canvaswrap{position:relative!important;z-index:1!important;flex:1 1 auto!important;min-height:0!important;}
-      .modal.crvtAnnotationFix .canvaswrap canvas{pointer-events:auto!important;touch-action:none!important;}
-      body:has(.modal.crvtAnnotationFix)>header,
-      body:has(.modal.crvtAnnotationFix)>#quickNav{visibility:hidden!important;pointer-events:none!important;}
+      body:has(.modal .tools) .modalbox>.tools .btn,
+      body:has(.modal .tools) .modalbox>.tools select,
+      body:has(.modal .tools) .modalbox>.tools label{
+        min-width:0!important;
+        width:100%!important;
+        margin:0!important;
+        pointer-events:auto!important;
+        touch-action:manipulation!important;
+        position:relative!important;
+        z-index:10!important;
+      }
+      body:has(.modal .tools) .modalbox>.tools .btn{
+        min-height:48px!important;
+        padding:9px 6px!important;
+        font-size:14px!important;
+        white-space:normal!important;
+        line-height:1.15!important;
+        cursor:pointer!important;
+      }
+      body:has(.modal .tools) .modalbox>.tools select{
+        min-height:48px!important;
+        padding:8px 6px!important;
+        font-size:14px!important;
+        background:#fff!important;
+      }
+      body:has(.modal .tools) .modalbox>.tools .btn.active{
+        outline:3px solid #0b6e9e!important;
+        outline-offset:-3px!important;
+        background:#e4f5fb!important;
+        color:#075a82!important;
+      }
+      body:has(.modal .tools) .canvaswrap{
+        flex:1 1 auto!important;
+        min-height:120px!important;
+        width:100%!important;
+        overflow:hidden!important;
+        position:relative!important;
+        z-index:1!important;
+      }
+      body:has(.modal .tools) .canvaswrap canvas{
+        pointer-events:auto!important;
+        touch-action:none!important;
+        max-width:100%!important;
+        max-height:100%!important;
+      }
+      body:has(.modal .tools) .modalbox>.small{
+        flex:0 0 auto!important;
+        max-height:58px!important;
+        overflow:auto!important;
+        margin:0!important;
+      }
+      @media(max-width:620px){
+        body:has(.modal .tools) .modalbox>.tools{grid-template-columns:repeat(3,minmax(0,1fr))!important;max-height:45dvh!important}
+        body:has(.modal .tools) .modalbox>.tools .btn{font-size:13px!important;min-height:46px!important}
+      }
+      @media(min-width:621px){
+        body:has(.modal .tools) .modalbox>.tools{grid-template-columns:repeat(6,minmax(0,1fr))!important;max-height:32dvh!important}
+      }
     `;
-    d.head.appendChild(st);
-    const scan=()=>{
-      d.querySelectorAll('.modal').forEach(m=>{
-        if(m.querySelector('.tools'))m.classList.add('crvtAnnotationFix');
-      });
-    };
-    scan();
-    new MutationObserver(scan).observe(d.body,{subtree:true,childList:true});
-  }catch(e){console.warn('CRVT annotation fix',e)}
-}
-frame.addEventListener('load',installFix);
+    document.head.appendChild(style);
+
+    function updateAnnotationState(){
+      const modals=[...document.querySelectorAll('.modal')];
+      const m=modals.find(x=>x.querySelector('.tools'));
+      const open=!!m && (()=>{
+        const cs=getComputedStyle(m);
+        return cs.display!=='none' && cs.visibility!=='hidden' && parseFloat(cs.opacity||'1')>0;
+      })();
+      if(m)m.classList.toggle('crvt-annotator',open);
+      document.body.classList.toggle('crvt-annotation-open',open);
+    }
+    updateAnnotationState();
+    new MutationObserver(updateAnnotationState).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class','hidden']});
+  }catch(e){
+    const b=document.getElementById('boot');
+    if(b)b.textContent='Erreur de chargement CRVT : '+e.message;
+  }
+})();
 </script>
 </body>
 </html>
