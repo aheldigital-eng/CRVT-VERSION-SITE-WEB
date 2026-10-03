@@ -1281,15 +1281,10 @@ if(audit.sections.tableau){
    pages.push(`<section class="page reportPage">
     ${pageHeader(reportPageNo++)}
     <h1>TABLEAU ÉLECTRIQUE${!first?' — SUITE':''}</h1><div class="blueRule"></div>
-    ${first?`<div class="bigAnswer"><span>PLACE DISPONIBLE DANS LE TABLEAU</span><b>${esc(place||"Non renseigné")}</b></div>
-    ${place==="Non"?`<div class="recommendation"><b>TABLEAU SUPPLÉMENTAIRE À PRÉVOIR</b>${photos.length?`<br>La photo ci-dessous permet de localiser la situation constatée.`:""}</div>`:""}`:""}
     ${block.html}
     ${last?noteHTML("tableau"):""}
    </section>`);
  });
- if(!blocks.length){
-   pages.push(`<section class="page reportPage">${pageHeader(reportPageNo++)}<h1>TABLEAU ÉLECTRIQUE</h1><div class="blueRule"></div><div class="bigAnswer"><span>PLACE DISPONIBLE DANS LE TABLEAU</span><b>${esc(place||"Non renseigné")}</b></div>${place==="Non"?`<div class="recommendation"><b>TABLEAU SUPPLÉMENTAIRE À PRÉVOIR</b></div>`:""}${noteHTML("tableau")}</section>`);
- }
 }
 
 /* Cheminement : photos regroupées par deux, avec contexte répété sur les pages de suite. */
