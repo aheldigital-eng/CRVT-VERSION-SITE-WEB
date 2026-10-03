@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CRVT — test tableau</title>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f1f5f9}iframe{border:0;width:100%;height:100%}#msg{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:99999;background:#0b6e9e;color:#fff;padding:8px 12px;border-radius:9px;font:700 13px Arial;box-shadow:0 3px 12px #0004}</style>
+</head>
+<body>
+<div id="msg">CRVT — test version tableau</div>
+<iframe id="crvt" src="index.html?tableau-test=1"></iframe>
+<script>
+const frame=document.getElementById('crvt');
+function clean(){
+  try{
+    const d=frame.contentDocument;
+    if(!d) return;
+    const rx=/Place disponible dans le tableau/i;
+    d.querySelectorAll('label,button,div,p,span').forEach(el=>{
+      if(rx.test((el.textContent||'').trim())){
+        const box=el.closest('.item')||el.parentElement;
+        if(box) box.style.display='none';
+      }
+    });
+  }catch(e){}
+}
+frame.addEventListener('load',()=>{
+  clean();
+  setInterval(clean,500);
+});
+</script>
+</body>
+</html>
