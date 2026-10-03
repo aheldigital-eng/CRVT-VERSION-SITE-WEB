@@ -1,4 +1,4 @@
-name: Publish CRVT from validated V7
+name: Publish CRVT validated V7
 on:
   push:
     branches: [main]
@@ -15,64 +15,20 @@ jobs:
           ref: gh-pages
           fetch-depth: 1
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Checkout validated V7 source
+      - name: Checkout main source
         uses: actions/checkout@v4
         with:
           ref: main
           path: source
           fetch-depth: 1
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Restore validated V7 and add cable fields
-        run: |
-          cp source/CRVT_DERNIERE_VERSION_VALIDEe_index-1.html index.html
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('index.html')
-          s=p.read_text(encoding='utf-8')
-          old='''const common=[
-["puissance","Puissance souscrite","select:3 kVA|6 kVA|9 kVA|12 kVA|15 kVA|18 kVA|24 kVA|36 kVA|Autre"],["compteur","Type de Compteur","select:Monophasé|Triphasé|Autre"],
-["divisionnaire","Installation d’un tableau divisionnaire","select:Oui|Non"],["typeborne","Type de borne","select:Monophasé|Triphasé|Autre"],
-["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"]
-];'''
-          new='''const common=[
-["puissance","Puissance souscrite","select:3 kVA|6 kVA|9 kVA|12 kVA|15 kVA|18 kVA|20 kVA|24 kVA|30 kVA|36 kVA|Autre"],["compteur","Type de Compteur","select:Monophasé|Triphasé|Autre"],
-["divisionnaire","Installation d’un tableau divisionnaire","select:Oui|Non"],["typeborne","Type de borne","select:Monophasé|Triphasé|Autre"],
-["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"],
-["longueur","Longueur cheminement (m)"],["hauteur","Hauteur / profondeur (m)"],["typeCable","Type de câble","select:3G10|5G10"],["cableCommunication","Câble de communication","select:Oui|Non"]
-];'''
-          if old not in s:
-              raise SystemExit('common block not found')
-          s=s.replace(old,new,1)
-          old='''const techLabels={
- divisionnaire:"Installation d’un tableau divisionnaire",
- puissance:"Puissance souscrite",
- compteur:"Type de compteur",
- typeborne:"Type de borne",
- environnement:"Environnement de la borne",
- position:"Positionnement de la borne"
-};'''
-          new='''const techLabels={
- divisionnaire:"Installation d’un tableau divisionnaire",
- puissance:"Puissance souscrite",
- compteur:"Type de compteur",
- typeborne:"Type de borne",
- environnement:"Environnement de la borne",
- position:"Positionnement de la borne",
- longueur:"Longueur cheminement (m)",
- hauteur:"Hauteur / profondeur (m)",
- typeCable:"Type de câble",
- cableCommunication:"Câble de communication"
-};'''
-          if old not in s:
-              raise SystemExit('techLabels block not found')
-          s=s.replace(old,new,1)
-          p.write_text(s,encoding='utf-8')
-          PY
+      - name: Restore validated CRVT V7
+        run: cp source/CRVT_DERNIERE_VERSION_VALIDEe_index-1.html index.html
       - name: Publish
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'Restore validated CRVT V7 with cable fields'
+          git commit -m 'Publish validated CRVT V7'
           git push origin gh-pages
