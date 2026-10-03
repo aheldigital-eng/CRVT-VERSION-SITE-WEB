@@ -32,11 +32,23 @@ if start != -1:
         raise SystemExit('obsolete patch end not found')
     s = s[:start] + s[end:]
 
-# 5) Keep the validated annotation tools intact and make the toolbar scrollable on small phones.
-old = '.tools{display:flex;gap:6px;flex-wrap:wrap}.tools .btn{flex:none}'
-new = '.tools{display:flex;gap:6px;flex-wrap:wrap;max-height:34vh;overflow-y:auto;padding-right:2px;align-content:flex-start}.tools .btn{flex:none}.tools select{flex:none;min-height:44px}.tools::-webkit-scrollbar{width:6px}.tools::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px}'
+# 5) Remove the obsolete "Place disponible dans le tableau ?" question.
+old = 'tableau:[\n["place","Place disponible dans le tableau ?","select:Oui|Non"]\n],'
+if old in s:
+    s = s.replace(old, 'tableau:[],', 1)
+
+# 6) Put annotation tools on two rows on mobile while keeping all tools clickable.
+old = '.crvtAnnotTools{flex:0 0 auto;display:flex;gap:8px;align-items:center;overflow-x:auto;overflow-y:hidden;padding:9px;background:#fff;border-bottom:1px solid #dbe5ec;box-shadow:0 3px 12px #0002;-webkit-overflow-scrolling:touch}'
+new = '.crvtAnnotTools{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;align-items:stretch;padding:9px;background:#fff;border-bottom:1px solid #dbe5ec;box-shadow:0 3px 12px #0002}.crvtAnnotTools .crvtAT,.crvtAnnotTools .crvtASelect{width:100%;min-width:0}'
 if old not in s:
-    raise SystemExit('tools css target not found')
+    raise SystemExit('annotation toolbar target not found')
+s = s.replace(old, new, 1)
+
+# 7) Make every annotation button the same compact size on phones.
+old = '@media(max-width:620px){.crvtAnnotHead>div{font-size:16px}.crvtAnnotFoot{align-items:stretch}.crvtAnnotFoot span{display:none}.crvtAnnotFoot>div{width:100%;display:flex}.crvtCancel,.crvtSave{flex:1}.crvtAT,.crvtASelect{font-size:13px;padding:8px 10px}}'
+new = '@media(max-width:620px){.crvtAnnotHead>div{font-size:16px}.crvtAnnotTools{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:7px}.crvtAT,.crvtASelect{font-size:12px;padding:8px 4px;min-height:42px;border-radius:10px}.crvtAnnotFoot{align-items:stretch}.crvtAnnotFoot span{display:none}.crvtAnnotFoot>div{width:100%;display:flex}.crvtCancel,.crvtSave{flex:1}}'
+if old not in s:
+    raise SystemExit('mobile annotation CSS target not found')
 s = s.replace(old, new, 1)
 
 p.write_text(s, encoding='utf-8')
