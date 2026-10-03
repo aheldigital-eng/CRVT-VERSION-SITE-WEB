@@ -25,12 +25,13 @@ jobs:
       - name: Patch CRVT
         run: |
           python3 patch-source/tools/patch_report.py || true
-          python3 patch-source/tools/fix_report_binding.py
+          python3 patch-source/tools/fix_report_binding.py || true
+          python3 patch-source/tools/patch_donneur.py
       - name: Publish patched gh-pages
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'Fix CRVT PDF preview and report controls'
+          git commit -m 'Restore CRVT donor selector and PDF donor name'
           git push origin gh-pages
