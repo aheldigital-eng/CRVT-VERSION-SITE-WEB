@@ -22,6 +22,8 @@ jobs:
           path: source
           fetch-depth: 1
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Repair published CRVT HTML and remove obsolete tableau references
+        run: python source/tools/repair_pwa_and_tableau.py
       - name: Apply safe tableau-only correction
         run: python source/tools/patch_published_tableau.py
       - name: Publish
@@ -30,5 +32,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'Fix tableau block without removing photo controls'
+          git commit -m 'Repair CRVT page and preserve tableau photos'
           git push origin gh-pages
