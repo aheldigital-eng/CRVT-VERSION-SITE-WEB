@@ -1,24 +1,80 @@
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CRVT</title></head><body><div id="boot">Chargement de CRVT…</div><script>
 (async()=>{
- try{
-  const u='CRVT_DERNIERE_VERSION_VALIDEe_index-1.html';
-  let s=await (await fetch(u,{cache:'no-store'})).text();
-  const patch=`<style id="crvt-toolbar-fix">
-.modal{padding:0!important;z-index:2147483000!important;background:#0b1220!important;overflow:auto!important}
-.modalbox{height:auto!important;min-height:100dvh!important;display:flex!important;flex-direction:column!important;gap:0!important;padding:calc(8px + env(safe-area-inset-top)) 8px calc(10px + env(safe-area-inset-bottom))!important}
-.tools{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px!important;flex:none!important;background:#0f1b2b!important;padding:8px!important;border-radius:12px!important;position:sticky!important;top:0!important;z-index:20!important;max-height:none!important;overflow:visible!important}
-.tools .btn,.tools label,.tools select{min-width:0!important;width:100%!important;margin:0!important;position:static!important;font-size:13px!important;padding:10px 6px!important;white-space:normal!important;line-height:1.15!important;min-height:44px!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important}
-.tools label{background:#e2e8f0;color:#334155;border-radius:10px;font-weight:700}
-.tools label select{background:#fff;color:#17202a;font-size:13px!important;padding:4px!important;min-height:34px!important}
-.tools #color{width:100%!important;height:44px!important;padding:8px!important}
-.tools #clear,.tools #cancel,.tools #done{grid-column:span 2!important}
-.canvaswrap{flex:0 0 auto!important;height:auto!important;min-height:0!important;max-height:none!important;margin:8px 0!important;overflow:hidden!important;border-radius:12px!important;background:#fff!important}
-.canvaswrap canvas{width:100%!important;height:auto!important;max-width:100%!important;max-height:none!important;object-fit:contain!important;touch-action:none!important}
-.modalbox>.small{background:#eef6fb!important;color:#334155!important;border-radius:10px!important;padding:10px!important;line-height:1.35!important;flex:none!important}
-@media(max-width:620px){.tools{grid-template-columns:repeat(3,minmax(0,1fr))!important}.tools #clear,.tools #cancel,.tools #done{grid-column:span 1!important}.tools .btn,.tools label,.tools select{font-size:12px!important;padding:9px 4px!important}.canvaswrap{margin:8px 0!important}}
+try{
+ const u='CRVT_DERNIERE_VERSION_VALIDEe_index-1.html';
+ const r=await fetch(u,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status);
+ let s=await r.text();
+ const patch=`<style id="crvt-annotation-style">
+/* CRVT — barre d'annotation : même style que l'interface, sans recouvrir l'image */
+.crvt-annotator.modal{position:fixed!important;inset:0!important;padding:10px!important;background:rgba(15,23,42,.78)!important;z-index:2147483000!important;overflow:auto!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.crvt-annotator .modalbox{width:min(980px,100%)!important;height:auto!important;min-height:0!important;max-height:calc(100dvh - 20px)!important;display:flex!important;flex-direction:column!important;gap:10px!important;background:#fff!important;border-radius:22px!important;padding:14px!important;box-shadow:0 24px 80px rgba(0,0,0,.35)!important;overflow:auto!important}
+.crvt-annotator .tools{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:8px!important;flex:0 0 auto!important;background:#fff!important;padding:2px!important;position:sticky!important;top:0!important;z-index:20!important;overflow:visible!important}
+.crvt-annotator .tools .btn,.crvt-annotator .tools label{min-width:0!important;width:100%!important;min-height:64px!important;margin:0!important;border:1px solid #dbe5ee!important;border-radius:14px!important;background:#f8fafc!important;color:#123a5c!important;font-weight:800!important;font-size:13px!important;padding:8px 5px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;line-height:1.1!important;text-align:center!important;white-space:normal!important;box-shadow:none!important;cursor:pointer!important}
+.crvt-annotator .tools .btn:hover,.crvt-annotator .tools label:hover{background:#eef7fb!important;border-color:#9bcfe0!important}
+.crvt-annotator .tools .btn.active{background:#238af2!important;color:#fff!important;border-color:#238af2!important;box-shadow:0 0 0 2px rgba(35,138,242,.16)!important}
+.crvt-annotator .tools #cancel{background:#ef3340!important;color:#fff!important;border-color:#ef3340!important}
+.crvt-annotator .tools #done{background:#0b9ec0!important;color:#fff!important;border-color:#0b9ec0!important}
+.crvt-annotator .tools #clear{grid-column:span 2!important}
+.crvt-annotator .tools #cancel,.crvt-annotator .tools #done{grid-column:span 2!important}
+.crvt-annotator .tools label{flex-direction:column!important}
+.crvt-annotator .tools label select{width:100%!important;min-width:0!important;min-height:30px!important;padding:4px 6px!important;border:1px solid #cbd5e1!important;border-radius:8px!important;background:#fff!important;color:#123a5c!important;font-size:12px!important;font-weight:800!important}
+.crvt-annotator .tools #color{width:100%!important;min-width:0!important;height:64px!important;padding:8px!important;border:1px solid #dbe5ee!important;border-radius:14px!important;background:#f8fafc!important;color:#123a5c!important;font-weight:800!important}
+.crvt-annotator .canvaswrap{flex:1 1 auto!important;min-height:240px!important;height:auto!important;max-height:none!important;background:#f8fafc!important;border:1px solid #dbe5ee!important;border-radius:16px!important;overflow:auto!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:8px!important}
+.crvt-annotator .canvaswrap canvas{display:block!important;width:auto!important;height:auto!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;touch-action:none!important;margin:auto!important;background:#fff!important}
+.crvt-annotator .modalbox>.small{flex:0 0 auto!important;background:#eef7fb!important;color:#526777!important;border:1px solid #dbeef5!important;border-radius:10px!important;padding:9px 11px!important;font-size:12px!important;line-height:1.35!important}
+.crvt-annotator .crvt-tool-icon{width:24px;height:24px;display:block;flex:0 0 24px}
+.crvt-annotator .crvt-tool-label{display:block}
+@media(max-width:720px){
+ .crvt-annotator.modal{padding:6px!important;align-items:flex-start!important}
+ .crvt-annotator .modalbox{width:100%!important;max-height:calc(100dvh - 12px)!important;border-radius:18px!important;padding:9px!important;gap:8px!important}
+ .crvt-annotator .tools{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}
+ .crvt-annotator .tools .btn,.crvt-annotator .tools label{min-height:58px!important;font-size:11px!important;border-radius:12px!important;padding:6px 3px!important}
+ .crvt-annotator .tools #clear,.crvt-annotator .tools #cancel,.crvt-annotator .tools #done{grid-column:span 1!important}
+ .crvt-annotator .tools #color{height:58px!important;font-size:11px!important}
+ .crvt-annotator .tools label select{font-size:10px!important;min-height:27px!important}
+ .crvt-annotator .canvaswrap{min-height:180px!important;padding:5px!important}
+ .crvt-annotator .crvt-tool-icon{width:21px;height:21px;flex-basis:21px}
+}
 </style>`;
-  s=s.replace('</head>',patch+'</head>');
-  document.open();document.write(s);document.close();
- }catch(e){document.body.innerHTML='<p style="font-family:Arial;padding:20px">Erreur de chargement CRVT : '+e+'</p>';}
+ const script=`<script id="crvt-annotation-script">
+(function(){
+ const svg=(p)=>'<svg class="crvt-tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>';
+ const icons={
+  select:svg('<path d="M5 3l13 9-6 1 4 7-3 1-4-7-4 4z"/>'),
+  pen:svg('<path d="M4 20l4.5-1 10-10-3.5-3.5-10 10z"/><path d="M13.5 6.5l3.5 3.5"/>'),
+  arrow:svg('<path d="M4 20L20 4"/><path d="M11 4h9v9"/>'),
+  line:svg('<path d="M5 19L19 5"/>'),
+  circle:svg('<circle cx="12" cy="12" r="7.5"/>'),
+  rect:svg('<rect x="5" y="6" width="14" height="12" rx="1"/>'),
+  text:svg('<path d="M5 5h14M12 5v14"/>'),
+  left:svg('<path d="M15 5l-6 7 6 7"/><path d="M9 12h10"/>'),
+  right:svg('<path d="M9 5l6 7-6 7"/><path d="M15 12H5"/>'),
+  undo:svg('<path d="M9 7H4v5"/><path d="M4 12c2-5 10-7 14-2 2 2 2 5 1 7"/>'),
+  redo:svg('<path d="M15 7h5v5"/><path d="M20 12c-2-5-10-7-14-2-2 2-2 5-1 7"/>'),
+  trash:svg('<path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v6M14 11v6"/>'),
+  minus:svg('<path d="M5 12h14"/>'),
+  plus:svg('<path d="M12 5v14M5 12h14"/>'),
+  clear:svg('<path d="M6 8h12M9 8V5h6v3M8 8l1 11h6l1-11"/><path d="M9 12l6 5M15 12l-6 5"/>'),
+  x:svg('<path d="M6 6l12 12M18 6L6 18"/>'),
+  save:svg('<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/>')
+ };
+ const labels={select:'Sélection',pen:'Dessin',arrow:'Flèche',line:'Ligne',circle:'Cercle',rect:'Rectangle',text:'Texte',rotateLeft:'Rotation −15°',rotateRight:'Rotation +15°',undo:'Annuler',redo:'Rétablir',deleteSelected:'Supprimer sélection',shrinkSelected:'Réduire',growSelected:'Agrandir',clear:'Tout effacer',cancel:'Annuler',done:'Enregistrer'};
+ function decorate(m){
+  if(!m||!m.querySelector||!m.querySelector('#select'))return;
+  m.classList.add('crvt-annotator');
+  const map={select:'select',pen:'pen',arrow:'arrow',line:'line',circle:'circle',rect:'rect',text:'text',rotateLeft:'left',rotateRight:'right',undo:'undo',redo:'redo',deleteSelected:'trash',shrinkSelected:'minus',growSelected:'plus',clear:'clear',cancel:'x',done:'save'};
+  Object.keys(map).forEach(id=>{const b=m.querySelector('#'+id);if(!b)return;if(b.dataset.crvtStyled)return;b.dataset.crvtStyled='1';b.innerHTML=icons[map[id]]+'<span class="crvt-tool-label">'+labels[id]+'</span>';});
+  const st=m.querySelector('#strokeStyle'); if(st){const lab=st.closest('label');if(lab&&!lab.dataset.crvtStyled){lab.dataset.crvtStyled='1';const sel=lab.querySelector('select');lab.textContent='';lab.appendChild(document.createTextNode('Style du trait'));if(sel)lab.appendChild(sel);}}
+  const color=m.querySelector('#color');if(color&&!color.dataset.crvtStyled){color.dataset.crvtStyled='1';color.setAttribute('aria-label','Couleur');}
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{const cv=m.querySelector('canvas');if(cv){cv.style.maxWidth='100%';cv.style.maxHeight='100%';cv.style.width='auto';cv.style.height='auto';}}));
+ }
+ const obs=new MutationObserver(()=>{document.querySelectorAll('.modal').forEach(decorate)});obs.observe(document.body,{childList:true,subtree:true});
+ window.addEventListener('load',()=>document.querySelectorAll('.modal').forEach(decorate));
+})();
+</script>`;
+ s=s.replace('</head>',patch+'</head>');
+ s=s.replace('</body>',script+'</body>');
+ document.open();document.write(s);document.close();
+}catch(e){document.body.innerHTML='<div style="font-family:Arial;padding:20px;color:#b91c1c">Erreur de chargement CRVT : '+e.message+'</div>';}
 })();
 </script></body></html>
