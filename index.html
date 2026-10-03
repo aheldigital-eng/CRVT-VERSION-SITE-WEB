@@ -27,7 +27,8 @@ label{display:block;font-weight:700;margin:9px 0 5px}input,select,textarea{width
 .quickNavBtn.active{background:#0b6e9e;color:#fff;border-color:#0b6e9e}.quickNavCount{display:inline-flex;min-width:18px;height:18px;padding:0 5px;align-items:center;justify-content:center;margin-left:5px;border-radius:999px;background:#e2e8f0;color:#334155;font-size:10px;font-weight:900}.quickNavBtn.active .quickNavCount{background:#fff;color:#0b6e9e}.quickNavBtn[data-empty="true"]{opacity:.62}.quickNavStatus{display:inline-flex;align-items:center;justify-content:center;margin-left:5px;font-size:12px;font-weight:900}.quickNavBtn[data-state="ok"] .quickNavStatus{color:#16a34a}.quickNavBtn[data-state="warn"] .quickNavStatus{color:#dc2626}.quickNavBtn.active[data-state="ok"] .quickNavStatus,.quickNavBtn.active[data-state="warn"] .quickNavStatus{color:inherit}.quickNavBtn[data-active="true"]{box-shadow:0 0 0 2px #7dd3fc55}
 @media print{#quickNav{display:none!important}}
 .nav{display:flex;gap:8px;position:sticky;bottom:0;background:#f1f5f9;padding:9px 0;z-index:15}.nav button{flex:1}
-.modal{position:fixed;inset:0;background:#000d;z-index:100;padding:8px}.modalbox{height:100%;display:flex;flex-direction:column;gap:8px}.canvaswrap{background:#fff;flex:1;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:0}.canvaswrap canvas{display:block;width:auto!important;height:auto!important;max-width:100%;max-height:100%;touch-action:none;object-fit:contain}
+.modal{position:fixed;inset:0;background:#000d;z-index:2147483640;padding:0}.modalbox{height:100%;display:flex;flex-direction:column;gap:0;background:#eef4f7}.canvaswrap{background:#fff;flex:1;border-radius:0;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:0}.canvaswrap canvas{display:block;width:auto!important;height:auto!important;max-width:100%;max-height:100%;touch-action:none;object-fit:contain}
+.crvtAnnotModal{position:fixed;inset:0;z-index:2147483647;background:rgba(5,18,28,.88);display:flex;align-items:stretch;justify-content:center;padding:0;box-sizing:border-box}.crvtAnnotBox{width:100%;height:100%;display:flex;flex-direction:column;background:#f4f7fa;color:#172433;overflow:hidden}.crvtAnnotHead{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:linear-gradient(135deg,#081b2c,#0b496b 55%,#13a9b8);color:#fff;box-shadow:0 3px 12px #0004}.crvtAnnotHead>div{display:flex;align-items:center;gap:10px;font-size:18px}.crvtAnnotHead span{font-size:11px;background:#ffffff22;border:1px solid #ffffff44;border-radius:999px;padding:4px 8px}.crvtAnnotClose{border:0;background:#ffffff18;color:#fff;font-size:25px;width:42px;height:42px;border-radius:12px}.crvtAnnotTools{flex:0 0 auto;display:flex;gap:8px;align-items:center;overflow-x:auto;overflow-y:hidden;padding:9px;background:#fff;border-bottom:1px solid #dbe5ec;box-shadow:0 3px 12px #0002;-webkit-overflow-scrolling:touch}.crvtAT,.crvtASelect{flex:0 0 auto;min-height:44px;border:1px solid #d3e0e8;border-radius:12px;background:#fff;color:#243746;padding:9px 12px;font-size:14px;font-weight:800;box-shadow:0 2px 5px #0f172a12}.crvtAT.active{background:#0b6e9e;color:#fff;border-color:#0b6e9e}.crvtASelect{min-width:112px}.crvtAnnotCanvas{flex:1;min-height:0;background:#1a1f23;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px}.crvtAnnotCanvas canvas{display:block;max-width:100%;max-height:100%;width:auto;height:auto;touch-action:none;box-shadow:0 5px 22px #0008}.crvtAnnotFoot{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #dbe5ec}.crvtAnnotFoot span{font-size:12px;color:#64748b}.crvtCancel,.crvtSave{border:0;border-radius:12px;padding:12px 15px;font-size:14px;font-weight:900}.crvtCancel{background:#ef3340;color:#fff}.crvtSave{background:#0b6e9e;color:#fff;margin-left:7px}@media(max-width:620px){.crvtAnnotHead>div{font-size:16px}.crvtAnnotFoot{align-items:stretch}.crvtAnnotFoot span{display:none}.crvtAnnotFoot>div{width:100%;display:flex}.crvtCancel,.crvtSave{flex:1}.crvtAT,.crvtASelect{font-size:13px;padding:8px 10px}}
 .tools{display:flex;gap:6px;flex-wrap:wrap;max-height:34vh;overflow-y:auto;padding-right:2px;align-content:flex-start}.tools .btn{flex:none}.tools select{flex:none;min-height:44px}.tools::-webkit-scrollbar{width:6px}.tools::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px}
 .historyMeta{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}.statusBadge{display:inline-block;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:800;background:#e2e8f0;color:#334155}.statusBadge.done{background:#dcfce7;color:#166534}.draftBar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 12px;border:1px solid #dbe4ec;background:#f8fafc;border-radius:11px;margin-bottom:10px}.smallMuted{font-size:12px;color:#64748b}.saveState{font-weight:700;color:#166534}.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 14px;border-radius:9px;z-index:200}
 @media(max-width:620px){.grid{grid-template-columns:1fr}.photoGrid{grid-template-columns:1fr}.choice{grid-template-columns:1fr 1fr 1fr}}
@@ -962,215 +963,129 @@ function newAudit(){
   }
 }
 function annotate(sec,i){
-let photo=audit.photos[sec][i];
-let src=photo.baseData||photo.data;
-if(!photo.annotations)photo.annotations=[];
-if(!photo.baseData)photo.baseData=photo.data;
-let m=document.createElement("div");m.className="modal";
-m.innerHTML=`<div class="modalbox">
-<div class="tools">
-<button class="btn secondary active" id="select">↖️ Sélectionner</button>
-<button class="btn secondary" id="pen">✏️ Dessin</button>
-<button class="btn secondary" id="arrow">↗️ Flèche</button>
-<button class="btn secondary" id="line">／ Ligne</button>
-<label class="btn secondary" style="display:inline-flex;align-items:center;gap:6px">
-  Style du trait
-  <select id="strokeStyle" style="padding:5px 7px;border-radius:7px;border:1px solid #cbd5e1">
-    <option value="solid">━ Plein</option>
-    <option value="dashed">╌ Pointillé</option>
-  </select>
-</label>
-<button class="btn secondary" id="circle">⭕ Cercle</button>
-<button class="btn secondary" id="rect">▭ Rectangle</button>
-<button class="btn secondary" id="text">T Texte</button>
-<button class="btn secondary" id="rotateLeft">↶ 15°</button>
-<button class="btn secondary" id="rotateRight">↷ 15°</button>
-<select id="color" style="width:105px;padding:8px;border-radius:8px">
-<option value="#e11d48">Rouge</option><option value="#2563eb">Bleu</option><option value="#16a34a">Vert</option>
-<option value="#f59e0b">Orange</option><option value="#000000">Noir</option><option value="#ffffff">Blanc</option>
-</select>
-<button class="btn secondary" id="undo">↶ Annuler</button><button class="btn secondary" id="redo">↷ Rétablir</button>
-<button class="btn secondary" id="deleteSelected">🗑️ Supprimer sélection</button>
-<button class="btn secondary" id="shrinkSelected">➖ Réduire</button>
-<button class="btn secondary" id="growSelected">➕ Agrandir</button>
-<button class="btn secondary" id="clear">Tout effacer</button>
-<button class="btn danger" id="cancel">Annuler</button><button class="btn primary" id="done">Enregistrer</button>
-</div>
-<div class="canvaswrap"><canvas></canvas></div>
-<div class="small" style="padding:8px 10px;color:#53616c">Sélectionner → clique sur un trait, une flèche, un cercle, un rectangle ou un texte déjà créé pour le déplacer ou le modifier.</div>
-</div>`;
-document.body.appendChild(m);
+  const photo=audit.photos[sec][i];
+  const src=photo.baseData||photo.data;
+  if(!photo.annotations) photo.annotations=[];
+  if(!photo.baseData) photo.baseData=photo.data;
 
-let c=m.querySelector("canvas"),ctx=c.getContext("2d"),img=new Image();
-let objects=JSON.parse(JSON.stringify(photo.annotations||[])),tool="select",color="#e11d48",strokeStyle="solid",drawing=null,selected=-1,drag=null;
-let undoStack=[],redoStack=[];
-function snapshot(){return JSON.parse(JSON.stringify(objects));}
-function commit(before){undoStack.push(before); if(undoStack.length>50) undoStack.shift(); redoStack=[];}
-function undo(){if(!undoStack.length){toast("Aucune action à annuler");return}redoStack.push(snapshot());objects=undoStack.pop();selected=-1;drag=null;drawing=null;draw();}
-function redo(){if(!redoStack.length){toast("Aucune action à rétablir");return}undoStack.push(snapshot());objects=redoStack.pop();selected=-1;drag=null;drawing=null;draw();}
+  const m=document.createElement("div");
+  m.className="crvtAnnotModal";
+  m.innerHTML=`
+    <div class="crvtAnnotBox">
+      <div class="crvtAnnotHead">
+        <div><b>📷 Annoter la photo</b><span>CRVT</span></div>
+        <button class="crvtAnnotClose" id="cancelTop" type="button">✕</button>
+      </div>
+      <div class="crvtAnnotTools">
+        <button class="crvtAT active" id="select" type="button">↖️ Sélection</button>
+        <button class="crvtAT" id="pen" type="button">✏️ Dessin</button>
+        <button class="crvtAT" id="arrow" type="button">↗️ Flèche</button>
+        <button class="crvtAT" id="line" type="button">／ Ligne</button>
+        <button class="crvtAT" id="circle" type="button">⭕ Cercle</button>
+        <button class="crvtAT" id="rect" type="button">▭ Rectangle</button>
+        <button class="crvtAT" id="text" type="button">T Texte</button>
+        <button class="crvtAT" id="rotateLeft" type="button">↶ 15°</button>
+        <button class="crvtAT" id="rotateRight" type="button">↷ 15°</button>
+        <select id="strokeStyle" class="crvtASelect"><option value="solid">━ Plein</option><option value="dashed">╌ Pointillé</option></select>
+        <select id="color" class="crvtASelect"><option value="#e11d48">🔴 Rouge</option><option value="#2563eb">🔵 Bleu</option><option value="#16a34a">🟢 Vert</option><option value="#f59e0b">🟠 Orange</option><option value="#000000">⚫ Noir</option><option value="#ffffff">⚪ Blanc</option></select>
+        <button class="crvtAT" id="undo" type="button">↶ Annuler</button>
+        <button class="crvtAT" id="redo" type="button">↷ Rétablir</button>
+        <button class="crvtAT" id="deleteSelected" type="button">🗑️ Supprimer</button>
+        <button class="crvtAT" id="shrinkSelected" type="button">➖ Réduire</button>
+        <button class="crvtAT" id="growSelected" type="button">➕ Agrandir</button>
+        <button class="crvtAT" id="clear" type="button">🧹 Tout effacer</button>
+      </div>
+      <div class="crvtAnnotCanvas"><canvas></canvas></div>
+      <div class="crvtAnnotFoot">
+        <span>Choisis un outil puis dessine directement sur la photo.</span>
+        <div><button class="crvtCancel" id="cancel" type="button">✕ Annuler</button><button class="crvtSave" id="done" type="button">💾 Enregistrer</button></div>
+      </div>
+    </div>`;
+  document.body.appendChild(m);
 
-img.onload=()=>{let r=c.parentElement.getBoundingClientRect(),s=Math.min(r.width/img.width,r.height/img.height,1);c.width=Math.max(1,Math.round(img.width*s));c.height=Math.max(1,Math.round(img.height*s));draw()};img.src=src;
+  const c=m.querySelector("canvas"),ctx=c.getContext("2d"),img=new Image();
+  let objects=JSON.parse(JSON.stringify(photo.annotations||[]));
+  let tool="select",color="#e11d48",strokeStyle="solid",drawing=null,selected=-1,drag=null;
+  let undoStack=[],redoStack=[];
+  const snapshot=()=>JSON.parse(JSON.stringify(objects));
+  const commit=before=>{undoStack.push(before);if(undoStack.length>50)undoStack.shift();redoStack=[]};
+  const undo=()=>{if(!undoStack.length){toast("Aucune action à annuler");return}redoStack.push(snapshot());objects=undoStack.pop();selected=-1;drag=drawing=null;draw()};
+  const redo=()=>{if(!redoStack.length){toast("Aucune action à rétablir");return}undoStack.push(snapshot());objects=redoStack.pop();selected=-1;drag=drawing=null;draw()};
 
-function pt(e){let r=c.getBoundingClientRect();return{x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height}}
-function rotPoint(x,y,cx,cy,a){let dx=x-cx,dy=y-cy;return{x:cx+dx*Math.cos(a)-dy*Math.sin(a),y:cy+dx*Math.sin(a)+dy*Math.cos(a)}}
-function bounds(o){
-let pts=[];
-if(o.type==="pen")pts=o.points||[];
-else{pts=[{x:o.x||0,y:o.y||0},{x:o.x2??o.x??0,y:o.y2??o.y??0}]}
-if(!pts.length)pts=[{x:0,y:0}];
-let minx=Math.min(...pts.map(p=>p.x)),maxx=Math.max(...pts.map(p=>p.x)),miny=Math.min(...pts.map(p=>p.y)),maxy=Math.max(...pts.map(p=>p.y));
-return {cx:(minx+maxx)/2,cy:(miny+maxy)/2,minx,maxx,miny,maxy};
-}
-function hit(o,p){
-let b=bounds(o),q=rotPoint(p.x,p.y,b.cx,b.cy,-(o.rot||0));
-if(o.type==="pen"){
-let pts=o.points||[];
-for(let j=1;j<pts.length;j++){
-let a=pts[j-1],z=pts[j],dx=z.x-a.x,dy=z.y-a.y,len2=dx*dx+dy*dy;
-let u=len2?Math.max(0,Math.min(1,((q.x-a.x)*dx+(q.y-a.y)*dy)/len2)):0;
-let x=a.x+u*dx,y=a.y+u*dy;if(Math.hypot(q.x-x,q.y-y)<=14)return true;
-}
-return false;
-}
-if(o.type==="line"||o.type==="arrow"){
-let a={x:o.x,y:o.y},z={x:o.x2,y:o.y2},dx=z.x-a.x,dy=z.y-a.y,len2=dx*dx+dy*dy;
-let u=len2?Math.max(0,Math.min(1,((q.x-a.x)*dx+(q.y-a.y)*dy)/len2)):0;
-let x=a.x+u*dx,y=a.y+u*dy;return Math.hypot(q.x-x,q.y-y)<=16;
-}
-if(o.type==="circle"){
-let cx=(o.x+o.x2)/2,cy=(o.y+o.y2)/2,rx=Math.abs(o.x2-o.x)/2,ry=Math.abs(o.y2-o.y)/2;
-if(!rx||!ry)return false;let v=((q.x-cx)/rx)**2+((q.y-cy)/ry)**2;return Math.abs(v-1)<.25;
-}
-if(o.type==="rect")return q.x>=b.minx-12&&q.x<=b.maxx+12&&q.y>=b.miny-12&&q.y<=b.maxy+12;
-if(o.type==="text")return q.x>=b.minx-15&&q.x<=b.maxx+15&&q.y>=b.miny-35&&q.y<=b.maxy+15;
-return false;
-}
-function drawArrow(o){let a=Math.atan2(o.y2-o.y,o.x2-o.x),L=20;ctx.beginPath();ctx.moveTo(o.x2,o.y2);ctx.lineTo(o.x2-L*Math.cos(a-.5),o.y2-L*Math.sin(a-.5));ctx.lineTo(o.x2-L*Math.cos(a+.5),o.y2-L*Math.sin(a+.5));ctx.closePath();ctx.fill()}
-function draw(){
-ctx.clearRect(0,0,c.width,c.height);ctx.drawImage(img,0,0,c.width,c.height);
-objects.forEach((o,idx)=>{
-let b=bounds(o);ctx.save();ctx.translate(b.cx,b.cy);ctx.rotate(o.rot||0);ctx.translate(-b.cx,-b.cy);
-ctx.strokeStyle=o.color;ctx.fillStyle=o.color;ctx.lineWidth=o.width||5;ctx.lineCap="round";ctx.lineJoin="round";
-if(o.dashed)ctx.setLineDash([16,10]);else ctx.setLineDash([]);
-if(o.type==="pen"){ctx.beginPath();(o.points||[]).forEach((p,j)=>j?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke()}
-else if(o.type==="line"||o.type==="arrow"){ctx.beginPath();ctx.moveTo(o.x,o.y);ctx.lineTo(o.x2,o.y2);ctx.stroke();if(o.type==="arrow"){ctx.setLineDash([]);drawArrow(o)}}
-else if(o.type==="circle"){ctx.beginPath();ctx.ellipse((o.x+o.x2)/2,(o.y+o.y2)/2,Math.abs(o.x2-o.x)/2,Math.abs(o.y2-o.y)/2,0,0,Math.PI*2);ctx.stroke()}
-else if(o.type==="rect"){ctx.strokeRect(Math.min(o.x,o.x2),Math.min(o.y,o.y2),Math.abs(o.x2-o.x),Math.abs(o.y2-o.y))}
-else if(o.type==="text"){ctx.font=`bold ${o.fontSize||28}px Arial`;ctx.fillText(o.text,o.x,o.y)}
-ctx.restore();
-if(idx===selected){ctx.save();ctx.strokeStyle="#0b6e9e";ctx.setLineDash([7,5]);ctx.lineWidth=2;ctx.strokeRect(b.minx-12,b.miny-12,b.maxx-b.minx+24,b.maxy-b.miny+24);ctx.restore()}
-});
-}
-function setTool(t){tool=t;drawing=null;drag=null;selected=-1;m.querySelectorAll(".tools .btn").forEach(b=>b.classList.remove("active"));let b=m.querySelector("#"+t);if(b)b.classList.add("active");draw()}
-m.querySelectorAll(".tools .btn").forEach(b=>b.onclick=()=>{if(["select","pen","arrow","line","circle","rect","text"].includes(b.id))setTool(b.id)});
-m.querySelector("#strokeStyle").onchange=e=>{
-  strokeStyle=e.target.value;
-  if(selected>=0){
-    const before=snapshot();
-    objects[selected].dashed=(strokeStyle==="dashed");
-    commit(before);
+  img.onload=()=>{
+    const box=c.parentElement.getBoundingClientRect();
+    const s=Math.min((box.width-8)/img.naturalWidth,(box.height-8)/img.naturalHeight,1);
+    c.width=Math.max(1,Math.round(img.naturalWidth*s));
+    c.height=Math.max(1,Math.round(img.naturalHeight*s));
     draw();
-  }
-};
-m.querySelector("#color").onchange=e=>{const before=snapshot();color=e.target.value;if(selected>=0){objects[selected].color=color;commit(before);draw()}};
-function rotate(delta){if(selected>=0){const before=snapshot();objects[selected].rot=(objects[selected].rot||0)+delta*Math.PI/180;commit(before);draw()}else toast("Sélectionne d’abord une annotation")}
-m.querySelector("#rotateLeft").onclick=()=>rotate(-15);m.querySelector("#rotateRight").onclick=()=>rotate(15);
-m.querySelector("#undo").onclick=undo;
-m.querySelector("#redo").onclick=redo;
-m.querySelector("#deleteSelected").onclick=()=>{if(selected>=0){const before=snapshot();objects.splice(selected,1);commit(before);selected=-1;drag=null;draw()}else toast("Sélectionne d’abord une annotation")};
-function scaleSelected(factor){
-  if(selected<0){toast("Sélectionne d’abord une annotation");return}
-  const before=snapshot();
-  const o=objects[selected];
-  const b=bounds(o);
-  if(o.type==="text"){
-    o.fontSize=Math.max(10,Math.min(120,(o.fontSize||28)*factor));
-    commit(before); draw(); return;
-  }
-  const cx=b.cx,cy=b.cy;
-  if(o.type==="pen" && Array.isArray(o.points)){
-    o.points=o.points.map(q=>({x:cx+(q.x-cx)*factor,y:cy+(q.y-cy)*factor}));
-  }else if(o.x!==undefined && o.y!==undefined){
-    o.x=cx+(o.x-cx)*factor; o.y=cy+(o.y-cy)*factor;
-    if(o.x2!==undefined){o.x2=cx+(o.x2-cx)*factor;o.y2=cy+(o.y2-cy)*factor;}
-  }
-  commit(before);
-  draw();
-}
-m.querySelector("#shrinkSelected").onclick=()=>scaleSelected(.8);
-m.querySelector("#growSelected").onclick=()=>scaleSelected(1.25);
-m.querySelector("#clear").onclick=()=>{if(confirm("Effacer toutes les annotations ?")){const before=snapshot();objects=[];commit(before);selected=-1;draw()}};
-c.onpointerdown=e=>{let p=pt(e);
-if(tool==="select"){selected=-1;for(let k=objects.length-1;k>=0;k--)if(hit(objects[k],p)){selected=k;break}if(selected>=0){
-  drag={start:p,base:JSON.parse(JSON.stringify(objects[selected])),before:snapshot()};
-  strokeStyle=objects[selected].dashed?"dashed":"solid";
-  const ss=m.querySelector("#strokeStyle"); if(ss) ss.value=strokeStyle;
-}
-draw();return}
-if(tool==="text"){
-  let t=prompt("Texte à ajouter");
-  if(t!==null && t.trim()){
-    const before=snapshot();
-    objects.push({type:"text",x:p.x,y:p.y,text:t.trim(),color,rot:0,width:5,fontSize:28,x2:p.x+100,y2:p.y});
-    selected=objects.length-1;
-    commit(before);
-  }
-  // Après avoir placé un texte, on repasse automatiquement en mode Sélection.
-  // Cela évite de rouvrir la fenêtre de saisie au prochain appui sur l'écran.
-  tool="select"; drawing=null; drag=null;
-  m.querySelectorAll(".tools .btn").forEach(b=>b.classList.remove("active"));
-  let selectBtn=m.querySelector("#select"); if(selectBtn) selectBtn.classList.add("active");
-  draw();
-  return;
-}
-const before=snapshot();
-drawing={x:p.x,y:p.y,x2:p.x,y2:p.y,color,width:5,type:tool,rot:0,dashed:(strokeStyle==="dashed"),points:tool==="pen"?[{x:p.x,y:p.y}]:undefined};objects.push(drawing);selected=objects.length-1;commit(before);
-};
-c.onpointermove=e=>{let p=pt(e);
-if(tool==="select"&&drag&&selected>=0){let dx=p.x-drag.start.x,dy=p.y-drag.start.y,o=objects[selected],b=drag.base;
-if(o.type==="pen")o.points=b.points.map(q=>({x:q.x+dx,y:q.y+dy}));else{o.x=b.x+dx;o.y=b.y+dy;if(b.x2!==undefined){o.x2=b.x2+dx;o.y2=b.y2+dy}}draw();return}
-if(!drawing)return;if(tool==="pen")drawing.points.push(p);else{drawing.x2=p.x;drawing.y2=p.y}draw()};
-c.onpointerup=()=>{if(drag&&selected>=0){const before=drag.before; const now=JSON.stringify(objects[selected]); const base=JSON.stringify(drag.base); if(now!==base) commit(before);} drawing=null;drag=null};
-function rasterizeAnnotatedPhoto(){
-  const w=img.naturalWidth||img.width||c.width;
-  const h=img.naturalHeight||img.height||c.height;
-  const out=document.createElement("canvas"); out.width=w; out.height=h;
-  const octx=out.getContext("2d");
-  octx.drawImage(img,0,0,w,h);
-  const sx=w/c.width, sy=h/c.height, sw=(sx+sy)/2;
-  const scalePoint=q=>({x:q.x*sx,y:q.y*sy});
-  const scaledBounds=o=>{
-    const pts=o.type==="pen"?(o.points||[]):[{x:o.x||0,y:o.y||0},{x:o.x2??o.x??0,y:o.y2??o.y??0}];
-    const pp=pts.map(scalePoint);
-    const minx=Math.min(...pp.map(q=>q.x)),maxx=Math.max(...pp.map(q=>q.x));
-    const miny=Math.min(...pp.map(q=>q.y)),maxy=Math.max(...pp.map(q=>q.y));
-    return {cx:(minx+maxx)/2,cy:(miny+maxy)/2};
   };
-  objects.forEach(o=>{
-    const b=scaledBounds(o); octx.save();
-    octx.translate(b.cx,b.cy); octx.rotate(o.rot||0); octx.translate(-b.cx,-b.cy);
-    octx.strokeStyle=o.color; octx.fillStyle=o.color; octx.lineWidth=(o.width||5)*sw; octx.lineCap="round"; octx.lineJoin="round";
-    if(o.dashed)octx.setLineDash([16*sw,10*sw]); else octx.setLineDash([]);
-    if(o.type==="pen"){octx.beginPath();(o.points||[]).forEach((q,j)=>{const z=scalePoint(q);j?octx.lineTo(z.x,z.y):octx.moveTo(z.x,z.y)});octx.stroke()}
-    else if(o.type==="line"||o.type==="arrow"){const a=scalePoint({x:o.x,y:o.y}),z=scalePoint({x:o.x2,y:o.y2});octx.beginPath();octx.moveTo(a.x,a.y);octx.lineTo(z.x,z.y);octx.stroke();if(o.type==="arrow"){octx.setLineDash([]);const ang=Math.atan2(z.y-a.y,z.x-a.x),L=20*sw;octx.beginPath();octx.moveTo(z.x,z.y);octx.lineTo(z.x-L*Math.cos(ang-.5),z.y-L*Math.sin(ang-.5));octx.lineTo(z.x-L*Math.cos(ang+.5),z.y-L*Math.sin(ang+.5));octx.closePath();octx.fill()}}
-    else if(o.type==="circle"){const a=scalePoint({x:o.x,y:o.y}),z=scalePoint({x:o.x2,y:o.y2});octx.beginPath();octx.ellipse((a.x+z.x)/2,(a.y+z.y)/2,Math.abs(z.x-a.x)/2,Math.abs(z.y-a.y)/2,0,0,Math.PI*2);octx.stroke()}
-    else if(o.type==="rect"){const a=scalePoint({x:o.x,y:o.y}),z=scalePoint({x:o.x2,y:o.y2});octx.strokeRect(Math.min(a.x,z.x),Math.min(a.y,z.y),Math.abs(z.x-a.x),Math.abs(z.y-a.y))}
-    else if(o.type==="text"){const a=scalePoint({x:o.x,y:o.y});octx.font=`bold ${(o.fontSize||28)*sw}px Arial`;octx.fillText(o.text,a.x,a.y)}
-    octx.restore();
-  });
-  return out.toDataURL("image/jpeg",.92);
+  img.src=src;
+
+  function pt(e){const r=c.getBoundingClientRect();return{x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height}}
+  function rotPoint(x,y,cx,cy,a){const dx=x-cx,dy=y-cy;return{x:cx+dx*Math.cos(a)-dy*Math.sin(a),y:cy+dx*Math.sin(a)+dy*Math.cos(a)}}
+  function bounds(o){
+    const pts=o.type==="pen"?(o.points||[]):[{x:o.x||0,y:o.y||0},{x:o.x2??o.x??0,y:o.y2??o.y??0}];
+    if(!pts.length)return{cx:0,cy:0,minx:0,maxx:0,miny:0,maxy:0};
+    const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);const minx=Math.min(...xs),maxx=Math.max(...xs),miny=Math.min(...ys),maxy=Math.max(...ys);
+    return{cx:(minx+maxx)/2,cy:(miny+maxy)/2,minx,maxx,miny,maxy};
+  }
+  function hit(o,p){
+    const b=bounds(o),q=rotPoint(p.x,p.y,b.cx,b.cy,-(o.rot||0));
+    if(o.type==="pen"){
+      const pts=o.points||[];for(let j=1;j<pts.length;j++){const a=pts[j-1],z=pts[j],dx=z.x-a.x,dy=z.y-a.y,len2=dx*dx+dy*dy,u=len2?Math.max(0,Math.min(1,((q.x-a.x)*dx+(q.y-a.y)*dy)/len2)):0,x=a.x+u*dx,y=a.y+u*dy;if(Math.hypot(q.x-x,q.y-y)<=18)return true}return false;
+    }
+    if(o.type==="line"||o.type==="arrow"){const a={x:o.x,y:o.y},z={x:o.x2,y:o.y2},dx=z.x-a.x,dy=z.y-a.y,len2=dx*dx+dy*dy,u=len2?Math.max(0,Math.min(1,((q.x-a.x)*dx+(q.y-a.y)*dy)/len2)):0,x=a.x+u*dx,y=a.y+u*dy;return Math.hypot(q.x-x,q.y-y)<=20}
+    if(o.type==="circle"){const cx=(o.x+o.x2)/2,cy=(o.y+o.y2)/2,rx=Math.abs(o.x2-o.x)/2,ry=Math.abs(o.y2-o.y)/2;if(!rx||!ry)return false;const v=((q.x-cx)/rx)**2+((q.y-cy)/ry)**2;return Math.abs(v-1)<.35}
+    if(o.type==="rect")return q.x>=b.minx-18&&q.x<=b.maxx+18&&q.y>=b.miny-18&&q.y<=b.maxy+18;
+    if(o.type==="text")return q.x>=b.minx-18&&q.x<=b.maxx+18&&q.y>=b.miny-45&&q.y<=b.maxy+18;
+    return false;
+  }
+  function drawArrow(o){const a=Math.atan2(o.y2-o.y,o.x2-o.x),L=22;ctx.beginPath();ctx.moveTo(o.x2,o.y2);ctx.lineTo(o.x2-L*Math.cos(a-.55),o.y2-L*Math.sin(a-.55));ctx.lineTo(o.x2-L*Math.cos(a+.55),o.y2-L*Math.sin(a+.55));ctx.closePath();ctx.fill()}
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);ctx.drawImage(img,0,0,c.width,c.height);
+    objects.forEach((o,idx)=>{const b=bounds(o);ctx.save();ctx.translate(b.cx,b.cy);ctx.rotate(o.rot||0);ctx.translate(-b.cx,-b.cy);ctx.strokeStyle=o.color;ctx.fillStyle=o.color;ctx.lineWidth=o.width||5;ctx.lineCap="round";ctx.lineJoin="round";ctx.setLineDash(o.dashed?[14,9]:[]);
+      if(o.type==="pen"){ctx.beginPath();(o.points||[]).forEach((p,j)=>j?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke()}
+      else if(o.type==="line"||o.type==="arrow"){ctx.beginPath();ctx.moveTo(o.x,o.y);ctx.lineTo(o.x2,o.y2);ctx.stroke();if(o.type==="arrow"){ctx.setLineDash([]);drawArrow(o)}}
+      else if(o.type==="circle"){ctx.beginPath();ctx.ellipse((o.x+o.x2)/2,(o.y+o.y2)/2,Math.abs(o.x2-o.x)/2,Math.abs(o.y2-o.y)/2,0,0,Math.PI*2);ctx.stroke()}
+      else if(o.type==="rect")ctx.strokeRect(Math.min(o.x,o.x2),Math.min(o.y,o.y2),Math.abs(o.x2-o.x),Math.abs(o.y2-o.y));
+      else if(o.type==="text"){ctx.font=`bold ${o.fontSize||28}px Arial`;ctx.fillText(o.text,o.x,o.y)}ctx.restore();
+      if(idx===selected){ctx.save();ctx.strokeStyle="#0b6e9e";ctx.setLineDash([7,5]);ctx.lineWidth=2;ctx.strokeRect(b.minx-12,b.miny-12,b.maxx-b.minx+24,b.maxy-b.miny+24);ctx.restore()}
+    });
+  }
+  function setTool(t){tool=t;drawing=null;drag=null;selected=-1;m.querySelectorAll(".crvtAT").forEach(b=>b.classList.remove("active"));const b=m.querySelector("#"+t);if(b)b.classList.add("active");draw()}
+  ["select","pen","arrow","line","circle","rect","text"].forEach(id=>m.querySelector("#"+id).onclick=()=>setTool(id));
+  m.querySelector("#strokeStyle").onchange=e=>{strokeStyle=e.target.value;if(selected>=0){const before=snapshot();objects[selected].dashed=strokeStyle==="dashed";commit(before);draw()}};
+  m.querySelector("#color").onchange=e=>{color=e.target.value;if(selected>=0){const before=snapshot();objects[selected].color=color;commit(before);draw()}};
+  function rotate(delta){if(selected<0){toast("Sélectionne d’abord une annotation");return}const before=snapshot();objects[selected].rot=(objects[selected].rot||0)+delta*Math.PI/180;commit(before);draw()}
+  m.querySelector("#rotateLeft").onclick=()=>rotate(-15);m.querySelector("#rotateRight").onclick=()=>rotate(15);m.querySelector("#undo").onclick=undo;m.querySelector("#redo").onclick=redo;
+  m.querySelector("#deleteSelected").onclick=()=>{if(selected<0){toast("Sélectionne d’abord une annotation");return}const before=snapshot();objects.splice(selected,1);commit(before);selected=-1;draw()};
+  function scaleSelected(f){if(selected<0){toast("Sélectionne d’abord une annotation");return}const before=snapshot(),o=objects[selected],b=bounds(o);if(o.type==="text")o.fontSize=Math.max(10,Math.min(120,(o.fontSize||28)*f));else if(o.type==="pen"&&Array.isArray(o.points))o.points=o.points.map(q=>({x:b.cx+(q.x-b.cx)*f,y:b.cy+(q.y-b.cy)*f}));else if(o.x!==undefined){o.x=b.cx+(o.x-b.cx)*f;o.y=b.cy+(o.y-b.cy)*f;if(o.x2!==undefined){o.x2=b.cx+(o.x2-b.cx)*f;o.y2=b.cy+(o.y2-b.cy)*f}}commit(before);draw()}
+  m.querySelector("#shrinkSelected").onclick=()=>scaleSelected(.8);m.querySelector("#growSelected").onclick=()=>scaleSelected(1.25);
+  m.querySelector("#clear").onclick=()=>{if(confirm("Effacer toutes les annotations ?")){const before=snapshot();objects=[];commit(before);selected=-1;draw()}};
+
+  c.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();c.setPointerCapture?.(e.pointerId);const p=pt(e);
+    if(tool==="select"){selected=-1;for(let k=objects.length-1;k>=0;k--)if(hit(objects[k],p)){selected=k;break}if(selected>=0){drag={start:p,base:JSON.parse(JSON.stringify(objects[selected])),before:snapshot()};strokeStyle=objects[selected].dashed?"dashed":"solid";m.querySelector("#strokeStyle").value=strokeStyle}draw();return}
+    if(tool==="text"){const t=prompt("Texte à ajouter");if(t!==null&&t.trim()){const before=snapshot();objects.push({type:"text",x:p.x,y:p.y,text:t.trim(),color,rot:0,width:5,fontSize:28,x2:p.x+100,y2:p.y});selected=objects.length-1;commit(before)}setTool("select");return}
+    const before=snapshot();drawing={x:p.x,y:p.y,x2:p.x,y2:p.y,color,width:5,type:tool,rot:0,dashed:strokeStyle==="dashed",points:tool==="pen"?[{x:p.x,y:p.y}]:undefined};objects.push(drawing);selected=objects.length-1;commit(before);draw();
+  },{passive:false});
+  c.addEventListener("pointermove",e=>{e.preventDefault();e.stopPropagation();const p=pt(e);if(tool==="select"&&drag&&selected>=0){const dx=p.x-drag.start.x,dy=p.y-drag.start.y,o=objects[selected],b=drag.base;if(o.type==="pen")o.points=b.points.map(q=>({x:q.x+dx,y:q.y+dy}));else{o.x=b.x+dx;o.y=b.y+dy;if(b.x2!==undefined){o.x2=b.x2+dx;o.y2=b.y2+dy}}draw();return}if(!drawing)return;if(tool==="pen")drawing.points.push(p);else{drawing.x2=p.x;drawing.y2=p.y}draw()},{passive:false});
+  c.addEventListener("pointerup",e=>{e.preventDefault();e.stopPropagation();if(drag&&selected>=0){if(JSON.stringify(objects[selected])!==JSON.stringify(drag.base))commit(drag.before)}drawing=null;drag=null},{passive:false});
+  c.addEventListener("pointercancel",()=>{drawing=null;drag=null});
+
+  function rasterizeAnnotatedPhoto(){
+    const w=img.naturalWidth||img.width||c.width,h=img.naturalHeight||img.height||c.height,out=document.createElement("canvas");out.width=w;out.height=h;const octx=out.getContext("2d");octx.drawImage(img,0,0,w,h);const sx=w/c.width,sy=h/c.height,sw=(sx+sy)/2,sp=q=>({x:q.x*sx,y:q.y*sy});
+    objects.forEach(o=>{const pts=o.type==="pen"?(o.points||[]):[{x:o.x||0,y:o.y||0},{x:o.x2??o.x??0,y:o.y2??o.y??0}],pp=pts.map(sp),minx=Math.min(...pp.map(q=>q.x)),maxx=Math.max(...pp.map(q=>q.x)),miny=Math.min(...pp.map(q=>q.y)),maxy=Math.max(...pp.map(q=>q.y)),cx=(minx+maxx)/2,cy=(miny+maxy)/2;octx.save();octx.translate(cx,cy);octx.rotate(o.rot||0);octx.translate(-cx,-cy);octx.strokeStyle=o.color;octx.fillStyle=o.color;octx.lineWidth=(o.width||5)*sw;octx.lineCap="round";octx.lineJoin="round";octx.setLineDash(o.dashed?[14*sw,9*sw]:[]);
+      if(o.type==="pen"){octx.beginPath();(o.points||[]).forEach((q,j)=>{const z=sp(q);j?octx.lineTo(z.x,z.y):octx.moveTo(z.x,z.y)});octx.stroke()}
+      else if(o.type==="line"||o.type==="arrow"){const a=sp({x:o.x,y:o.y}),z=sp({x:o.x2,y:o.y2});octx.beginPath();octx.moveTo(a.x,a.y);octx.lineTo(z.x,z.y);octx.stroke();if(o.type==="arrow"){octx.setLineDash([]);const ang=Math.atan2(z.y-a.y,z.x-a.x),L=22*sw;octx.beginPath();octx.moveTo(z.x,z.y);octx.lineTo(z.x-L*Math.cos(ang-.55),z.y-L*Math.sin(ang-.55));octx.lineTo(z.x-L*Math.cos(ang+.55),z.y-L*Math.sin(ang+.55));octx.closePath();octx.fill()}}
+      else if(o.type==="circle"){const a=sp({x:o.x,y:o.y}),z=sp({x:o.x2,y:o.y2});octx.beginPath();octx.ellipse((a.x+z.x)/2,(a.y+z.y)/2,Math.abs(z.x-a.x)/2,Math.abs(z.y-a.y)/2,0,0,Math.PI*2);octx.stroke()}
+      else if(o.type==="rect"){const a=sp({x:o.x,y:o.y}),z=sp({x:o.x2,y:o.y2});octx.strokeRect(Math.min(a.x,z.x),Math.min(a.y,z.y),Math.abs(z.x-a.x),Math.abs(z.y-a.y))}
+      else if(o.type==="text"){const a=sp({x:o.x,y:o.y});octx.font=`bold ${(o.fontSize||28)*sw}px Arial`;octx.fillText(o.text,a.x,a.y)}octx.restore()});return out.toDataURL("image/jpeg",.92)
+  }
+  function close(){m.remove()}
+  m.querySelector("#cancel").onclick=close;m.querySelector("#cancelTop").onclick=close;
+  m.querySelector("#done").onclick=()=>{selected=-1;drag=drawing=null;photo.annotations=JSON.parse(JSON.stringify(objects));photo.baseData=photo.baseData||src;photo.data=rasterizeAnnotatedPhoto();if(audit.status==="Terminé")audit.status="Brouillon";save();m.remove();render()};
 }
-m.querySelector("#done").onclick=()=>{
-selected=-1;drag=null;drawing=null;
-photo.annotations=JSON.parse(JSON.stringify(objects));
-photo.baseData=photo.baseData||src;
-draw();
-photo.data=rasterizeAnnotatedPhoto();
-if(audit.status==="Terminé") audit.status="Brouillon";
-save();m.remove();render();
-};
-m.querySelector("#cancel").onclick=()=>m.remove();
-}
+
 function validateAudit(){
   const items=[];
   const add=(type,text,detail="")=>items.push({type,text,detail});
