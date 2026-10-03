@@ -1287,7 +1287,9 @@ if(audit.sections.tableau){
     ${last?noteHTML("tableau"):""}
    </section>`);
  });
-
+ if(!blocks.length){
+   pages.push(`<section class="page reportPage">${pageHeader(reportPageNo++)}<h1>TABLEAU ÉLECTRIQUE</h1><div class="blueRule"></div><div class="bigAnswer"><span>PLACE DISPONIBLE DANS LE TABLEAU</span><b>${esc(place||"Non renseigné")}</b></div>${place==="Non"?`<div class="recommendation"><b>TABLEAU SUPPLÉMENTAIRE À PRÉVOIR</b></div>`:""}${noteHTML("tableau")}</section>`);
+ }
 }
 
 /* Cheminement : photos regroupées par deux, avec contexte répété sur les pages de suite. */
