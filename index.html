@@ -401,10 +401,10 @@ function updateQuickNav(){
   const photoCount=key=>(audit.photos?.[key]||[]).length;
   const stateFor=key=>{
     if(key==="general") return audit.client.trim()&&audit.date&&audit.auditeur.trim()?"ok":"warn";
-    if(key==="infos") return audit.data.commentaire||audit.data.place||audit.data.puissance||audit.data.compteur||audit.data.borne||audit.data.environnement||audit.data.position||audit.data.longueurCable||audit.data.typeCable||audit.data.cableCommunication?"ok":"warn";
+    if(key==="infos") return audit.data.commentaire||audit.data.puissance||audit.data.compteur||audit.data.borne||audit.data.environnement||audit.data.position||audit.data.longueurCable||audit.data.typeCable||audit.data.cableCommunication?"ok":"warn";
     if(key==="modules") return Object.values(audit.sections).some(Boolean)?"ok":"warn";
     if(key==="synthese") return validateAudit().some(x=>x.type==="error")?"warn":"ok";
-     if(key==="tableau") return !audit.sections.tableau?"warn":(audit.data.place && photoCount("tableau")?"ok":"warn");
+     if(key==="tableau") return !audit.sections.tableau?"warn":(photoCount("tableau")?"ok":"warn");
     if(key==="cheminement") return !audit.sections.cheminement?"warn":(audit.data.passage&&audit.data.protection&&photoCount("cheminement")?"ok":"warn");
     if(key==="borne") return !audit.sections.borne?"warn":(photoCount("borne")?"ok":"warn");
     if(key==="actions") return "ok";
@@ -506,7 +506,7 @@ audit.data[e.dataset.field]=e.value;
 if(audit.status==="Terminé") audit.status="Brouillon";
 save();
 if(e.dataset.hasOther==="true"){let w=document.getElementById(e.dataset.field+"OtherWrap");if(w)w.style.display=e.value==="Autre"?"block":"none";}
-if(["place","passage","protection"].includes(e.dataset.field)) renderFollowups();
+if(["passage","protection"].includes(e.dataset.field)) renderFollowups();
 });
 bindPhotoInputs();
 bindCaptionInputs();
@@ -1113,7 +1113,6 @@ function validationTarget(item){
   if(t.includes('auditeur non renseigné')) return {selector:'[data-top="auditeur"]'};
   if(t.includes('aucun module sélectionné')) return {selector:'[data-toggle]'};
   if(t.includes('tableau électrique : décision')) return {selector:'[data-field="place"]'};
-  if(t.includes('tableau électrique : aucune photo')) return {selector:'#tableauFollow'};
   if(t.includes('cheminement : type de passage')) return {selector:'[data-field="passage"]'};
   if(t.includes('cheminement : protection')) return {selector:'[data-field="protection"]'};
   if(t.includes('cheminement : aucune photo')) return {selector:'#cheminementFollow'};
@@ -1270,7 +1269,6 @@ pages.push(`<section class="page reportPage">
 /* Tableau électrique */
 if(audit.sections.tableau){
  let photos=audit.photos.tableau||[];
- let place=audit.data.place||"";
  const blocks=photoPageBlocks(photos,"TABLEAU ÉLECTRIQUE","TABLEAU ÉLECTRIQUE");
  const total=blocks.length||1;
  blocks.forEach((block,idx)=>{
@@ -1493,7 +1491,6 @@ header{position:fixed !important;top:0 !important;left:0 !important;right:0 !imp
 #quickNav{position:fixed !important;top:var(--header-h) !important;left:0 !important;right:0 !important;width:100% !important;z-index:290 !important;margin:0 !important;}
 .quickNavInner{overscroll-behavior-x:contain;touch-action:pan-x;overflow-x:auto;overflow-y:hidden;}
 @media print{body{padding-top:0 !important;}header{position:static !important;display:none !important;}#quickNav{display:none !important;}}
-</style>
 </style>
 </head><body class="theme-${pdfThemeKey}">${pages.join("")}<button id="printBtn" disabled>🖨️ Imprimer / Enregistrer en PDF</button><div id="ready" style="position:fixed;left:18px;bottom:18px;padding:8px 12px;border-radius:7px;background:#fff;border:1px solid #cbd5dc;font-size:12px;font-weight:700;color:#53616c;z-index:98">Préparation du rapport…</div><script>(function(){const btn=document.getElementById("printBtn"),ready=document.getElementById("ready"); const imgs=[...document.images]; const wait=imgs.map(img=>img.complete?Promise.resolve():new Promise(r=>{img.addEventListener("load",r,{once:true});img.addEventListener("error",r,{once:true})})); Promise.all(wait).then(()=>{requestAnimationFrame(()=>{requestAnimationFrame(()=>{btn.disabled=false;btn.textContent="🖨️ Imprimer / Enregistrer en PDF";ready.textContent="Rapport prêt à être imprimé";btn.onclick=()=>window.print();});});});})();<\/script>
 <button id="crvtBackTop" class="crvt-back-top noPrint" type="button" aria-label="Remonter en haut" title="Remonter en haut">↑ <span>Haut</span></button>
