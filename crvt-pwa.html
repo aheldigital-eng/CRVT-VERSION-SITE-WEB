@@ -15,24 +15,38 @@
 <script>
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}
 const frame=document.getElementById('crvt');
+
 function patchHistoryButtons(){
   try{
     const w=frame.contentWindow,d=frame.contentDocument;
-    if(!w||!d||!w.idbDelete||!w.idbAll||!w.history)return false;
+    if(!w||!d)return false;
     w.deleteAudit=async function(id){
       if(!confirm('Supprimer définitivement cet audit enregistré ?')) return;
       try{
-        await w.idbDelete(id);
-        if('historyCache' in w) w.historyCache=await w.idbAll();
-        w.history();
+        const req=w.indexedDB.open('auditTerrainV26DB',1);
+        await new Promise((resolve,reject)=>{
+          req.onerror=()=>reject(req.error||new Error('IndexedDB indisponible'));
+          req.onsuccess=()=>{
+            const db=req.result;
+            if(!db.objectStoreNames.contains('audits')){db.close();reject(new Error('Store audits introuvable'));return;}
+            const tx=db.transaction('audits','readwrite');
+            tx.objectStore('audits').delete(id);
+            tx.oncomplete=()=>{db.close();resolve();};
+            tx.onerror=()=>{db.close();reject(tx.error||new Error('Suppression impossible'));};
+            tx.onabort=()=>{db.close();reject(tx.error||new Error('Suppression annulée'));};
+          };
+        });
+        if(typeof w.history==='function') await w.history();
         if(typeof w.toast==='function') w.toast('Audit supprimé');
       }catch(e){
+        console.error('CRVT suppression audit',e);
         if(typeof w.toast==='function') w.toast('Impossible de supprimer cet audit.');
       }
     };
     return true;
   }catch(e){return false;}
 }
+
 function patchTableau(){
   try{
     const w=frame.contentWindow,d=frame.contentDocument;
@@ -49,9 +63,6 @@ function patchTableau(){
   }catch(e){return false;}
 }
 
-// Le rapport est conçu en A4 (210 mm) pour l'impression.
-// Sur téléphone, on le réduit uniquement à l'écran afin que toute la page
-// soit visible. Le rendu PDF/Impression reste inchangé.
 let reportScaleObserver=null;
 function fitReportPreview(reportFrame){
   try{
@@ -84,8 +95,10 @@ function watchReportOverlay(){
     rf.addEventListener('load',run,{once:false});
     run();
     if(reportScaleObserver)reportScaleObserver.disconnect();
-    reportScaleObserver=new ResizeObserver(run);
-    reportScaleObserver.observe(rf);
+    if(typeof ResizeObserver!=='undefined'){
+      reportScaleObserver=new ResizeObserver(run);
+      reportScaleObserver.observe(rf);
+    }
     return true;
   }catch(e){return false;}
 }
