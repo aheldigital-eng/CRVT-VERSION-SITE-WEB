@@ -1,0 +1,116 @@
+name: Repair live CRVT
+
+on:
+  workflow_run:
+    workflows: ["Make CRVT installable as PWA"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout published gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Repair header and deletion
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          # Make sure the modern CRVT logo is visible inside the application header.
+          logo_css = '''
+          <style id="crvt-live-logo-fix">
+          .crvtLiveBrand{display:flex;align-items:center;gap:11px;min-width:0}
+          .crvtLiveLogo{width:48px;height:48px;flex:0 0 48px;border-radius:12px;background:#fff;padding:4px;object-fit:contain;box-shadow:0 3px 12px #001f3a33}
+          .crvtLiveTitle{min-width:0}.crvtLiveTitle h1{margin:0;font-size:20px;line-height:1.15}.crvtLiveTitle .sub{margin-top:3px}
+          @media(max-width:620px){.crvtLiveLogo{width:44px;height:44px;flex-basis:44px}.crvtLiveTitle h1{font-size:18px}}
+          </style>
+          '''
+          if 'id="crvt-live-logo-fix"' not in s:
+              s = s.replace('</head>', logo_css + '\n</head>', 1)
+
+          header = '''<header><div class="crvtLiveBrand"><img class="crvtLiveLogo" src="crvt-logo.svg?v=fix2" alt="CRVT"><div class="crvtLiveTitle"><h1>CRVT — Compte rendu de visite technique</h1><div class="sub">Audit technique • photos • annotations • légendes • sauvegarde • partage • rapport dynamique</div></div></div></header>'''
+          s, n = re.subn(r'<header>.*?</header>', header, s, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit('En-tête CRVT introuvable')
+
+          # Robust deletion fallback. It catches the existing "Supprimer" buttons before
+          # their inline handler, deletes the exact IndexedDB record, then refreshes history.
+          delete_js = r'''
+          <!-- CRVT LIVE DELETE FIX V1 -->
+          <script id="crvt-live-delete-fix">
+          (function(){
+            const DB='auditTerrainV26DB', STORE='audits';
+            function removeAudit(id){
+              return new Promise((resolve,reject)=>{
+                const req=indexedDB.open(DB,1);
+                req.onerror=()=>reject(req.error||new Error('IndexedDB inaccessible'));
+                req.onsuccess=()=>{
+                  const db=req.result;
+                  if(!db.objectStoreNames.contains(STORE)){db.close();reject(new Error('Store audits introuvable'));return;}
+                  const tx=db.transaction(STORE,'readwrite');
+                  tx.objectStore(STORE).delete(id);
+                  tx.oncomplete=()=>{db.close();resolve(true)};
+                  tx.onerror=()=>{db.close();reject(tx.error||new Error('Suppression impossible'))};
+                };
+              });
+            }
+            function extractId(btn){
+              const a=btn.getAttribute('onclick')||'';
+              const m=a.match(/deleteAudit\(\s*([0-9]+)\s*\)/);
+              return m?Number(m[1]):null;
+            }
+            document.addEventListener('click',async function(ev){
+              const btn=ev.target.closest&&ev.target.closest('button');
+              if(!btn)return;
+              const text=(btn.textContent||'').trim().toLowerCase();
+              if(!text.includes('supprimer'))return;
+              const id=extractId(btn);
+              if(id===null)return;
+              ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
+              if(!window.confirm('Supprimer définitivement cet audit enregistré ?'))return;
+              try{
+                await removeAudit(id);
+                const card=btn.closest('.item');
+                if(card)card.remove();
+                if(typeof history==='function'){
+                  try{await history()}catch(e){}
+                } else if(typeof renderHistory==='function'){
+                  try{await renderHistory()}catch(e){}
+                }
+                if(typeof toast==='function')toast('Audit supprimé');
+                else alert('Audit supprimé');
+              }catch(e){
+                console.error('CRVT suppression',e);
+                alert('Impossible de supprimer cet audit.');
+              }
+            },true);
+          })();
+          </script>
+          '''
+          if 'id="crvt-live-delete-fix"' not in s:
+              s = s.replace('</body>', delete_js + '\n</body>', 1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Publish repair
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Fix CRVT live header and audit deletion'
+          git push origin gh-pages
