@@ -22,21 +22,34 @@ jobs:
         run: |
           from pathlib import Path
           import re
+
           src=Path('index-19.html')
           if not src.exists(): raise SystemExit('Stable CRVT source missing')
           s=src.read_text(encoding='utf-8')
+
+          # Normalize known malformed style boundaries from the historical source.
           s=s.replace('</style>\n</style>\n<style>\n/* V20 — outils pro terrain */','</style>\n<style>\n/* V20 — outils pro terrain */',1)
           s=s.replace('</style>\r\n</style>\r\n<style>\r\n/* V20 — outils pro terrain */','</style>\r\n<style>\r\n/* V20 — outils pro terrain */',1)
-          # Remove the obsolete second localStorage deleteAudit, preserving the IndexedDB version.
-          s=re.sub(r'\nfunction deleteAudit\(id\)\{\n  if\(!confirm\("Supprimer définitivement cet audit \?"\)\) return;.*?\n\}\nfunction exportAuditJSON','\nfunction exportAuditJSON',s,count=1,flags=re.S)
+          s=s.replace('@media print{body{background:#fff}.card{border:0;box-shadow:none}}\n<style id="crvt-v14-quicknav-fixed">','@media print{body{background:#fff}.card{border:0;box-shadow:none}}\n</style>\n<style id="crvt-v14-quicknav-fixed">',1)
+          s=s.replace('</style>\n</style>\n</head>','</style>\n</head>',1)
+
+          # Preserve the working IndexedDB deleteAudit and remove the obsolete
+          # localStorage implementation which used to override it.
+          s=re.sub(r'\nfunction deleteAudit\(id\)\{\n  if\(!confirm\("Supprimer définitivement cet audit \?"\)\) return;.*?\n\}\nfunction exportAuditJSON', '\nfunction exportAuditJSON', s, count=1, flags=re.S)
+          s=re.sub(r'\n/\* V1\.29 — historique professionnel \*/.*?/\* ================= V20 — OUTILS PRO TERRAIN ================= \*/', '\n/* ================= V20 — OUTILS PRO TERRAIN ================= */', s, count=1, flags=re.S)
+
+          # Audit history naming: CRVT ENSIO - donneur X client.
           old='${esc(x.client||"Sans nom")}'
           new='${esc("CRVT ENSIO - " + (x.donneur||"Sans donneur") + " X " + (x.client||"Sans nom"))}'
           if old in s: s=s.replace(old,new,1)
+
+          # Modern CRVT header logo.
           logo_css='''\n<style id="crvt-modern-logo">.crvtBrand{display:flex;align-items:center;gap:12px;min-width:0}.crvtBrandLogo{width:58px;height:58px;flex:0 0 58px;object-fit:contain;background:#fff;border-radius:14px;padding:5px;box-shadow:0 4px 14px #001f3a33}.crvtBrandText{min-width:0}.crvtBrandText h1{margin:0;font-size:21px;line-height:1.12}.crvtBrandText .sub{margin-top:4px}.crvtBrandText .crvtKicker{font-size:10px;font-weight:900;letter-spacing:2px;opacity:.9;margin-bottom:3px}@media(max-width:620px){.crvtBrandLogo{width:50px;height:50px;flex-basis:50px}.crvtBrandText h1{font-size:18px}.crvtBrandText .sub{font-size:11px}}</style>\n'''
           if 'id="crvt-modern-logo"' not in s: s=s.replace('</head>',logo_css+'</head>',1)
-          header='<header><div class="crvtBrand"><img class="crvtBrandLogo" src="crvt-logo.svg?v=clean2" alt="CRVT"><div class="crvtBrandText"><div class="crvtKicker">CRVT</div><h1>Compte rendu de visite technique</h1><div class="sub">Audit technique • photos • annotations • légendes • sauvegarde • partage • rapport dynamique</div></div></div></header>'
+          header='<header><div class="crvtBrand"><img class="crvtBrandLogo" src="crvt-logo.svg?v=clean3" alt="CRVT"><div class="crvtBrandText"><div class="crvtKicker">CRVT</div><h1>Compte rendu de visite technique</h1><div class="sub">Audit technique • photos • annotations • légendes • sauvegarde • partage • rapport dynamique</div></div></div></header>'
           s,n=re.subn(r'<header>.*?</header>',header,s,count=1,flags=re.S)
           if n!=1: raise SystemExit('CRVT header missing')
+
           out=Path('/tmp/crvt-deploy');out.mkdir(exist_ok=True)
           (out/'index.html').write_text(s,encoding='utf-8')
 
@@ -56,10 +69,10 @@ jobs:
           git show origin/gh-pages:crvt-icon-192.png > /tmp/crvt-deploy/crvt-icon-192.png 2>/dev/null || true
           git show origin/gh-pages:crvt-icon-512.png > /tmp/crvt-deploy/crvt-icon-512.png 2>/dev/null || true
           cat > /tmp/crvt-deploy/manifest.json <<'EOF'
-          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=clean2","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT.","icons":[{"src":"crvt-icon-192.png?v=clean2","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"crvt-icon-512.png?v=clean2","sizes":"512x512","type":"image/png","purpose":"maskable"},{"src":"crvt-logo.svg?v=clean2","sizes":"any","type":"image/svg+xml","purpose":"any"}]}
+          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=clean3","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT.","icons":[{"src":"crvt-icon-192.png?v=clean3","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"crvt-icon-512.png?v=clean3","sizes":"512x512","type":"image/png","purpose":"maskable"},{"src":"crvt-logo.svg?v=clean3","sizes":"any","type":"image/svg+xml","purpose":"any"}]}
           EOF
           cat > /tmp/crvt-deploy/sw.js <<'EOF'
-          const CACHE='crvt-clean-v2';const BASE=self.registration.scope;self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll([BASE,'index.html','manifest.json','crvt-logo.svg'])).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(CACHE).then(x=>x.put(e.request,c)).catch(()=>{});return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match(BASE))));});
+          const CACHE='crvt-clean-v3';const BASE=self.registration.scope;self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll([BASE,'index.html','manifest.json','crvt-logo.svg'])).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(CACHE).then(x=>x.put(e.request,c)).catch(()=>{});return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match(BASE))));});
           EOF
           python3 - <<'PY'
           from pathlib import Path
