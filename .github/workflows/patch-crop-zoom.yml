@@ -1,0 +1,77 @@
+name: CRVT crop zoom
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout published gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add photo crop zoom
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          marker='<!-- CRVT CROP ZOOM V1 -->'
+          if marker in s:
+              print('Crop zoom already present')
+              raise SystemExit(0)
+
+          css='''\n<style id="crvt-crop-zoom-v1">\n.crvt-crop-zoom-tools{grid-column:1/-1;display:flex;gap:6px;align-items:center;justify-content:center;padding:4px;background:#eef7fa;border:1px solid #dbe5ec;border-radius:10px}\n.crvt-crop-zoom-tools button{border:1px solid #b9d4df;background:#fff;color:#0b6e9e;border-radius:9px;min-width:48px;min-height:38px;font-weight:900;font-size:13px;cursor:pointer;touch-action:manipulation}\n.crvt-crop-zoom-tools button:active{transform:scale(.97)}\n.crvt-crop-zoom-tools .crvt-zoom-value{min-width:64px;text-align:center;font-size:12px;font-weight:900;color:#173247}\n.crvt-annotation-stage.crvt-zoomed{align-items:flex-start;justify-content:flex-start}\n</style>\n'''
+          if '</head>' not in s: raise SystemExit('head introuvable')
+          s=s.replace('</head>',css+'</head>',1)
+
+          old='''      <button type="button" class="crvt-tool" id="text">T<span>Texte</span></button>'''
+          new=old+'''\n      <div class="crvt-crop-zoom-tools" aria-label="Zoom photo">\n        <button type="button" id="zoomOut" title="Réduire le zoom">🔍−</button>\n        <span class="crvt-zoom-value" id="zoomValue">100 %</span>\n        <button type="button" id="zoomReset" title="Réinitialiser le zoom">100%</button>\n        <button type="button" id="zoomIn" title="Agrandir le zoom">🔍+</button>\n      </div>'''
+          if old not in s: raise SystemExit('bouton Texte introuvable')
+          s=s.replace(old,new,1)
+
+          # Current crop patch uses this declaration; also support the pre-crop declaration.
+          oldvars='let tool="select",color="#e11d48",strokeStyle="solid",drawing=null,drawingBefore=null,selected=-1,drag=null;'
+          if oldvars not in s: raise SystemExit('variables annotate introuvables')
+          s=s.replace(oldvars,oldvars+'\n  let crvtZoom=1;',1)
+
+          oldfit='''    c.width=Math.max(1,Math.round(img.naturalWidth*s));\n    c.height=Math.max(1,Math.round(img.naturalHeight*s));\n    draw();'''
+          newfit='''    c.width=Math.max(1,Math.round(img.naturalWidth*s));\n    c.height=Math.max(1,Math.round(img.naturalHeight*s));\n    applyCrvtZoom();\n    draw();'''
+          if oldfit not in s: raise SystemExit('fitCanvas introuvable')
+          s=s.replace(oldfit,newfit,1)
+
+          anchor='''  img.onload=()=>{fitCanvas();setTimeout(fitCanvas,80)};\n  img.src=src;'''
+          zoomcode='''  function applyCrvtZoom(){\n    const stage=m.querySelector(".crvt-annotation-stage");\n    const value=m.querySelector("#zoomValue");\n    if(!c.width||!c.height)return;\n    const z=Math.max(.75,Math.min(3,crvtZoom));\n    crvtZoom=z;\n    c.style.width=Math.round(c.width*z)+"px";\n    c.style.height=Math.round(c.height*z)+"px";\n    if(stage)stage.classList.toggle("crvt-zoomed",z>1.01);\n    if(value)value.textContent=Math.round(z*100)+" %";\n  }\n  function setCrvtZoom(z){\n    crvtZoom=Math.max(.75,Math.min(3,z));\n    applyCrvtZoom();\n    draw();\n  }\n  m.addEventListener("click",e=>{\n    const b=e.target.closest("#zoomIn,#zoomOut,#zoomReset");\n    if(!b)return;\n    e.preventDefault();e.stopPropagation();\n    if(b.id==="zoomIn")setCrvtZoom(crvtZoom+.25);\n    else if(b.id==="zoomOut")setCrvtZoom(crvtZoom-.25);\n    else setCrvtZoom(1);\n  });\n\n'''+anchor
+          if anchor not in s: raise SystemExit('anchor img.onload introuvable')
+          s=s.replace(anchor,zoomcode,1)
+
+          s=s.replace(marker,'',1) if marker in s else s
+          s=s.replace('</body>',marker+'\n</body>',1)
+          p.write_text(s,encoding='utf-8')
+          print('OK: crop zoom patch applied')
+          PY
+
+      - name: Publish
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Add zoom controls for photo cropping'
+          for i in 1 2 3; do
+            git pull --rebase origin gh-pages || true
+            if git push origin gh-pages; then exit 0; fi
+            sleep 3
+          done
+          exit 1
