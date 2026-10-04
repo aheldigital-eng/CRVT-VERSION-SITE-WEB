@@ -19,8 +19,6 @@ function patchHistoryButtons(){
   try{
     const w=frame.contentWindow,d=frame.contentDocument;
     if(!w||!d||!w.idbDelete||!w.idbAll||!w.history)return false;
-    // The stable HTML contains two historical deleteAudit implementations.
-    // The visible history is now backed by IndexedDB, so the PWA must use that store.
     w.deleteAudit=async function(id){
       if(!confirm('Supprimer définitivement cet audit enregistré ?')) return;
       try{
@@ -50,13 +48,60 @@ function patchTableau(){
     return !!d.querySelector('#tableauFollow .photoActions');
   }catch(e){return false;}
 }
+
+// Le rapport est conçu en A4 (210 mm) pour l'impression.
+// Sur téléphone, on le réduit uniquement à l'écran afin que toute la page
+// soit visible. Le rendu PDF/Impression reste inchangé.
+let reportScaleObserver=null;
+function fitReportPreview(reportFrame){
+  try{
+    if(!reportFrame||!reportFrame.contentDocument)return;
+    const d=reportFrame.contentDocument;
+    const html=d.documentElement, body=d.body;
+    if(!html||!body)return;
+    const page=d.querySelector('.page,.reportPage');
+    if(!page)return;
+    const viewport=Math.max(1,reportFrame.clientWidth-2);
+    const natural=Math.max(page.scrollWidth||0,page.getBoundingClientRect().width||0);
+    if(!natural)return;
+    const scale=Math.min(1,viewport/natural);
+    body.style.transformOrigin='top left';
+    body.style.transform='scale('+scale+')';
+    body.style.width=(100/scale)+'%';
+    body.style.minHeight=(100/scale)+'%';
+    html.style.overflowX='hidden';
+    html.style.overflowY='auto';
+    html.style.background='#dfe6eb';
+  }catch(e){}
+}
+function watchReportOverlay(){
+  try{
+    const overlay=document.getElementById('crvtReportOverlay');
+    if(!overlay)return false;
+    const rf=overlay.querySelector('iframe');
+    if(!rf)return false;
+    const run=()=>setTimeout(()=>fitReportPreview(rf),60);
+    rf.addEventListener('load',run,{once:false});
+    run();
+    if(reportScaleObserver)reportScaleObserver.disconnect();
+    reportScaleObserver=new ResizeObserver(run);
+    reportScaleObserver.observe(rf);
+    return true;
+  }catch(e){return false;}
+}
+
 frame.addEventListener('load',()=>{
  let n=0;
  const t=setInterval(()=>{
    const h=patchHistoryButtons();
    const p=patchTableau();
+   watchReportOverlay();
    if((h&&p)||++n>60)clearInterval(t);
  },250);
+ try{
+   const mo=new MutationObserver(()=>watchReportOverlay());
+   mo.observe(frame.contentDocument.body,{childList:true,subtree:true});
+ }catch(e){}
 });
 </script>
 </body>
