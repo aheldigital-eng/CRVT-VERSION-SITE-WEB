@@ -15,6 +15,26 @@
 <script>
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}
 const frame=document.getElementById('crvt');
+function patchHistoryButtons(){
+  try{
+    const w=frame.contentWindow,d=frame.contentDocument;
+    if(!w||!d||!w.idbDelete||!w.idbAll||!w.history)return false;
+    // The stable HTML contains two historical deleteAudit implementations.
+    // The visible history is now backed by IndexedDB, so the PWA must use that store.
+    w.deleteAudit=async function(id){
+      if(!confirm('Supprimer définitivement cet audit enregistré ?')) return;
+      try{
+        await w.idbDelete(id);
+        if('historyCache' in w) w.historyCache=await w.idbAll();
+        w.history();
+        if(typeof w.toast==='function') w.toast('Audit supprimé');
+      }catch(e){
+        if(typeof w.toast==='function') w.toast('Impossible de supprimer cet audit.');
+      }
+    };
+    return true;
+  }catch(e){return false;}
+}
 function patchTableau(){
   try{
     const w=frame.contentWindow,d=frame.contentDocument;
@@ -32,7 +52,11 @@ function patchTableau(){
 }
 frame.addEventListener('load',()=>{
  let n=0;
- const t=setInterval(()=>{if(patchTableau()||++n>50)clearInterval(t)},250);
+ const t=setInterval(()=>{
+   const h=patchHistoryButtons();
+   const p=patchTableau();
+   if((h&&p)||++n>60)clearInterval(t);
+ },250);
 });
 </script>
 </body>
