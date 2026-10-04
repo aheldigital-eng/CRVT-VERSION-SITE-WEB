@@ -30,12 +30,12 @@ jobs:
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          old = '})();\n</script>\n</body></html>`'
-          new = '})();\n<\\/script>\n</body></html>`'
+          old = '})();\\n</script>\\n</body></html>`'
+          new = '})();\\n<\\/script>\\n</body></html>`'
           if old in s:
               s = s.replace(old, new, 1)
               p.write_text(s, encoding='utf-8')
-              print('Fixed the report template closing script tag.')
+              print('Fixed the literal report template closing script tag.')
           else:
               print('Report template closing pattern already fixed or not found.')
       - name: Apply safe tableau-only correction
