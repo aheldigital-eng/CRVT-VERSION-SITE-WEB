@@ -236,8 +236,9 @@ const ENSIO_LOGO='ensio-logo-transparent.png';
 const common=[
 ["puissance","Puissance souscrite","select:3 kVA|6 kVA|9 kVA|12 kVA|15 kVA|18 kVA|24 kVA|36 kVA|Autre"],["compteur","Type de Compteur","select:Monophasé|Triphasé|Autre"],
 ["divisionnaire","Installation d’un tableau divisionnaire","select:Oui|Non"],["typeborne","Type de borne","select:Monophasé|Triphasé|Autre"],
-["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"],["distance","Distance (m)","text"],["typeCable","Type de câble","select:3G10|5G10"],["cablecom","Câble de communication","select:Oui|Non"]
-["distance","Distance (m)","text"],["typeCable","Type de câble","select:3G10|5G10"],];
+["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"],
+["distance","Distance (m)","text"],["typeCable","Type de câble","select:3G10|5G10"],["cablecom","Câble de communication","select:Oui|Non"]
+];
 const modules={
 tableau:[
 ["place","Place disponible dans le tableau ?","select:Oui|Non"]
@@ -1549,7 +1550,6 @@ header{position:fixed !important;top:0 !important;left:0 !important;right:0 !imp
 #quickNav{position:fixed !important;top:var(--header-h) !important;left:0 !important;right:0 !important;width:100% !important;z-index:290 !important;margin:0 !important;}
 .quickNavInner{overscroll-behavior-x:contain;touch-action:pan-x;overflow-x:auto;overflow-y:hidden;}
 @media print{body{padding-top:0 !important;}header{position:static !important;display:none !important;}#quickNav{display:none !important;}}
-</style>
 </style>
 </head><body class="theme-${pdfThemeKey}">${pages.join("")}<button id="printBtn" disabled>🖨️ Imprimer / Enregistrer en PDF</button><div id="ready" style="position:fixed;left:18px;bottom:18px;padding:8px 12px;border-radius:7px;background:#fff;border:1px solid #cbd5dc;font-size:12px;font-weight:700;color:#53616c;z-index:98">Préparation du rapport…</div><script>(function(){const btn=document.getElementById("printBtn"),ready=document.getElementById("ready"); const imgs=[...document.images]; const wait=imgs.map(img=>img.complete?Promise.resolve():new Promise(r=>{img.addEventListener("load",r,{once:true});img.addEventListener("error",r,{once:true})})); Promise.all(wait).then(()=>{requestAnimationFrame(()=>{requestAnimationFrame(()=>{btn.disabled=false;btn.textContent="🖨️ Imprimer / Enregistrer en PDF";ready.textContent="Rapport prêt à être imprimé";btn.onclick=()=>window.print();});});});})();<\/script>
 <button id="crvtBackTop" class="crvt-back-top noPrint" type="button" aria-label="Remonter en haut" title="Remonter en haut">↑ <span>Haut</span></button>
