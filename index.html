@@ -218,6 +218,14 @@ header{position:fixed !important;top:0 !important;left:0 !important;right:0 !imp
 .crvt-crop-zoom-tools .crvt-zoom-value{min-width:64px;text-align:center;font-size:12px;font-weight:900;color:#173247}
 .crvt-annotation-stage.crvt-zoomed{align-items:flex-start;justify-content:flex-start}
 </style>
+
+<style id="crvt-crop-preview-v2">
+.crvtCropPreview{position:fixed;right:12px;top:72px;width:min(190px,44vw);height:190px;background:#fff;border:2px solid #14a7b8;border-radius:12px;box-shadow:0 10px 30px #0006;z-index:1200;display:none;overflow:hidden}
+.crvtCropPreview.open{display:block}
+.crvtCropPreviewTitle{height:28px;background:#075d78;color:#fff;font:800 11px Arial,sans-serif;display:flex;align-items:center;justify-content:center}
+.crvtCropPreview canvas{display:block;width:100%;height:calc(100% - 28px);object-fit:contain;background:#111}
+@media(max-width:620px){.crvtCropPreview{width:170px;height:170px;top:66px;right:8px}}
+</style>
 </head>
 <body>
 <header><h1>CRVT — Compte rendu de visite technique</h1><div class="sub">Audit technique • photos • annotations • légendes • sauvegarde • partage • rapport dynamique</div></header>
@@ -1054,6 +1062,35 @@ function annotate(sec,i){
   let objects=JSON.parse(JSON.stringify(photo.annotations||[]));
   let tool="select",color="#e11d48",strokeStyle="solid",drawing=null,drawingBefore=null,selected=-1,drag=null;
   let crvtZoom=1; let cropStart=null,cropRect=null;
+    let cropPreviewBox=null,cropPreviewCanvas=null;
+    function ensureCropPreview(){
+      if(cropPreviewBox) return;
+      cropPreviewBox=document.createElement("div");
+      cropPreviewBox.className="crvtCropPreview";
+      cropPreviewBox.innerHTML='<div class="crvtCropPreviewTitle">APERÇU DU ROGNAGE</div><canvas></canvas>';
+      document.body.appendChild(cropPreviewBox);
+      cropPreviewCanvas=cropPreviewBox.querySelector("canvas");
+    }
+    function updateCropPreview(){
+      if(tool!=="crop"||!cropRect||!img||!img.complete) return;
+      ensureCropPreview();
+      cropPreviewBox.classList.add("open");
+      const x=Math.min(cropRect.x,cropRect.x2),y=Math.min(cropRect.y,cropRect.y2),w=Math.abs(cropRect.x2-cropRect.x),h=Math.abs(cropRect.y2-cropRect.y);
+      if(w<4||h<4) return;
+      const iw=img.naturalWidth||img.width||c.width,ih=img.naturalHeight||img.height||c.height;
+      const sx=iw/c.width,sy=ih/c.height;
+      const sx0=Math.max(0,Math.round(x*sx)),sy0=Math.max(0,Math.round(y*sy));
+      const sw=Math.max(1,Math.min(iw-sx0,Math.round(w*sx))),sh=Math.max(1,Math.min(ih-sy0,Math.round(h*sy)));
+      const maxW=420,maxH=420,scale=Math.min(maxW/sw,maxH/sh);
+      cropPreviewCanvas.width=Math.max(1,Math.round(sw*scale));
+      cropPreviewCanvas.height=Math.max(1,Math.round(sh*scale));
+      const pc=cropPreviewCanvas.getContext("2d");
+      pc.clearRect(0,0,cropPreviewCanvas.width,cropPreviewCanvas.height);
+      pc.drawImage(img,sx0,sy0,sw,sh,0,0,cropPreviewCanvas.width,cropPreviewCanvas.height);
+    }
+    function removeCropPreview(){
+      if(cropPreviewBox){cropPreviewBox.remove();cropPreviewBox=null;cropPreviewCanvas=null;}
+    }
   let undoStack=[],redoStack=[];
 
   function snapshot(){return JSON.parse(JSON.stringify(objects));}
@@ -1141,7 +1178,7 @@ function annotate(sec,i){
       if(idx===selected){ctx.save();ctx.strokeStyle="#0b6e9e";ctx.setLineDash([7,5]);ctx.lineWidth=2;ctx.strokeRect(b.minx-12,b.miny-12,b.maxx-b.minx+24,b.maxy-b.miny+24);ctx.restore()}
     });
   }
-  function setTool(t){tool=t;drawing=null;drag=null;selected=-1;cropStart=null;cropRect=null;m.querySelectorAll(".crvt-tool").forEach(b=>b.classList.remove("active"));const b=m.querySelector("#"+t);if(b)b.classList.add("active");draw()}
+  function setTool(t){tool=t;drawing=null;drag=null;selected=-1;cropStart=null;cropRect=null;if(t!=="crop")removeCropPreview();else ensureCropPreview();m.querySelectorAll(".crvt-tool").forEach(b=>b.classList.remove("active"));const b=m.querySelector("#"+t);if(b)b.classList.add("active");draw()}
   ["select","pen","arrow","line","circle","rect","text","crop"].forEach(id=>m.querySelector("#"+id).addEventListener("click",e=>{e.preventDefault();e.stopPropagation();setTool(id)}));
   m.querySelector("#strokeStyle").addEventListener("change",e=>{strokeStyle=e.target.value;if(selected>=0){const before=snapshot();objects[selected].dashed=strokeStyle==="dashed";commit(before);draw()}});
   m.querySelector("#color").addEventListener("change",e=>{color=e.target.value;if(selected>=0){const before=snapshot();objects[selected].color=color;commit(before);draw()}});
@@ -1154,7 +1191,7 @@ function annotate(sec,i){
 
   c.onpointerdown=e=>{
     e.preventDefault();c.setPointerCapture?.(e.pointerId);const p=pt(e);
-    if(tool==="crop"){cropStart={x:p.x,y:p.y};cropRect={x:p.x,y:p.y,x2:p.x,y2:p.y};draw();return;}
+    if(tool==="crop"){ensureCropPreview();cropPreviewBox.classList.add("open");cropStart={x:p.x,y:p.y};cropRect={x:p.x,y:p.y,x2:p.x,y2:p.y};draw();updateCropPreview();return;}
     if(tool==="select"){
       selected=-1;for(let k=objects.length-1;k>=0;k--)if(hit(objects[k],p)){selected=k;break}
       if(selected>=0){drag={start:p,base:JSON.parse(JSON.stringify(objects[selected])),before:snapshot()};strokeStyle=objects[selected].dashed?"dashed":"solid";m.querySelector("#strokeStyle").value=strokeStyle;m.querySelector("#color").value=objects[selected].color||color}
@@ -1168,13 +1205,13 @@ function annotate(sec,i){
     drawingBefore=snapshot();drawing={x:p.x,y:p.y,x2:p.x,y2:p.y,color,width:5,type:tool,rot:0,dashed:strokeStyle==="dashed",points:tool==="pen"?[{x:p.x,y:p.y}]:undefined};objects.push(drawing);selected=objects.length-1;draw();
   };
   c.onpointermove=e=>{e.preventDefault();const p=pt(e);
-    if(tool==="crop"&&cropStart){cropRect={x:cropStart.x,y:cropStart.y,x2:p.x,y2:p.y};draw();return;}
+    if(tool==="crop"&&cropStart){cropRect={x:cropStart.x,y:cropStart.y,x2:p.x,y2:p.y};draw();updateCropPreview();return;}
     if(tool==="select"&&drag&&selected>=0){const dx=p.x-drag.start.x,dy=p.y-drag.start.y,o=objects[selected],b=drag.base;if(o.type==="pen")o.points=b.points.map(q=>({x:q.x+dx,y:q.y+dy}));else{o.x=b.x+dx;o.y=b.y+dy;if(b.x2!==undefined){o.x2=b.x2+dx;o.y2=b.y2+dy}}draw();return}if(!drawing)return;if(tool==="pen")drawing.points.push(p);else{drawing.x2=p.x;drawing.y2=p.y}draw()};
   c.onpointerup=e=>{
     e.preventDefault();
     if(tool==="crop"&&cropRect){
       const x=Math.min(cropRect.x,cropRect.x2),y=Math.min(cropRect.y,cropRect.y2),w=Math.abs(cropRect.x2-cropRect.x),h=Math.abs(cropRect.y2-cropRect.y);
-      if(w<30||h<30){cropRect=null;cropStart=null;draw();toast("Zone de rognage trop petite");return;}
+      if(w<30||h<30){cropRect=null;cropStart=null;draw();removeCropPreview();toast("Zone de rognage trop petite");return;}
       const iw=img.naturalWidth||img.width||c.width,ih=img.naturalHeight||img.height||c.height;
       const sx=iw/c.width,sy=ih/c.height;
       const sx0=Math.max(0,Math.round(x*sx)),sy0=Math.max(0,Math.round(y*sy));
@@ -1186,7 +1223,7 @@ function annotate(sec,i){
       photo.baseData=data;photo.data=data;photo.annotations=[];photo.rotation=0;
       if(audit.status==="Terminé")audit.status="Brouillon";
       cropRect=null;cropStart=null;
-      close(false);save();render();toast("Photo rognée");return;
+      removeCropPreview();close(false);save();render();toast("Photo rognée");return;
     }
     if(drawing&&drawingBefore){commit(drawingBefore)}if(drag&&selected>=0){const before=drag.before,now=JSON.stringify(objects[selected]),base=JSON.stringify(drag.base);if(now!==base)commit(before)}drawing=null;drawingBefore=null;drag=null;draw()};
   c.onpointercancel=()=>{if(drawing&&drawingBefore){objects.pop();}drawing=null;drawingBefore=null;drag=null;draw()};
