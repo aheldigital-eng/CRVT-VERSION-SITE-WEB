@@ -2,7 +2,8 @@
   "name": "CRVT — Compte rendu de visite technique",
   "short_name": "CRVT",
   "lang": "fr-FR",
-  "start_url": "./",
+  "id": "./crvt-pwa.html",
+  "start_url": "./crvt-pwa.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
@@ -10,6 +11,7 @@
   "theme_color": "#0b6e9e",
   "description": "Compte rendu de visite technique CRVT.",
   "icons": [
-    {"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}
+    {"src":"icon.svg","sizes":"192x192","type":"image/svg+xml","purpose":"any maskable"},
+    {"src":"icon.svg","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}
   ]
 }
