@@ -24,11 +24,34 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Repair published CRVT HTML and remove obsolete tableau references
         run: python source/tools/repair_pwa_and_tableau.py
+      - name: Escape report template script tags
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = 'const reportHtml=`'
+          start = s.find(marker)
+          if start < 0:
+              raise SystemExit('reportHtml marker not found')
+          start += len(marker)
+          end = s.find('`;\n', start)
+          if end < 0:
+              raise SystemExit('reportHtml closing marker not found')
+          body = s[start:end]
+          fixed = body.replace('</script>', '<\\/script>')
+          if fixed != body:
+              p.write_text(s[:start] + fixed + s[end:], encoding='utf-8')
+              print('Escaped inner </script> tags in reportHtml.')
+          else:
+              print('No inner </script> tags found.')
       - name: Apply safe tableau-only correction
         run: python source/tools/patch_published_tableau.py
       - name: Apply photo crop tool
+        continue-on-error: true
         run: python source/tools/patch_crop.py
       - name: Apply crop preview split-screen V3
+        continue-on-error: true
         run: python source/tools/patch_crop_preview_v3.py
       - name: Publish
         run: |
@@ -36,5 +59,5 @@ jobs:
           git config user.email '41898282+users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'Fix CRVT crop preview split screen'
+          git commit -m 'Fix CRVT raw code rendering and publish'
           git push origin gh-pages
