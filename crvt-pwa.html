@@ -63,6 +63,40 @@ function patchTableau(){
   }catch(e){return false;}
 }
 
+function patchInformations(){
+  try{
+    const w=frame.contentWindow,d=frame.contentDocument;
+    if(!w||!d||!w.audit)return false;
+    if(d.getElementById('crvtExtraCableFields')) return true;
+    const labels=[...d.querySelectorAll('label')];
+    const pos=labels.find(x=>(x.textContent||'').trim()==='Positionnement de Borne');
+    if(!pos||!pos.parentElement)return false;
+    const host=pos.parentElement;
+    const wrap=d.createElement('div');
+    wrap.id='crvtExtraCableFields';
+    wrap.className='grid full';
+    wrap.style.marginTop='8px';
+    wrap.innerHTML=`
+      <div><label>Distance (m)</label><input id="crvtDistance" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ex. 25"></div>
+      <div><label>Type de câble</label><select id="crvtTypeCable"><option value="">Sélectionner...</option><option value="3G10">3G10</option><option value="5G10">5G10</option></select></div>
+      <div class="full"><label>Câble de communication</label><select id="crvtCableComm"><option value="">Sélectionner...</option><option value="Oui">Oui</option><option value="Non">Non</option></select></div>`;
+    host.parentNode.insertBefore(wrap,host.nextSibling);
+    const dist=d.getElementById('crvtDistance'), type=d.getElementById('crvtTypeCable'), comm=d.getElementById('crvtCableComm');
+    dist.value=w.audit.data.longueurCable||w.audit.data.distance||'';
+    type.value=w.audit.data.typeCable||'';
+    comm.value=w.audit.data.cableCommunication||'';
+    const save=async()=>{
+      w.audit.data.longueurCable=dist.value;
+      w.audit.data.typeCable=type.value;
+      w.audit.data.cableCommunication=comm.value;
+      w.audit.updatedAt=new Date().toISOString();
+      try{if(typeof w.idbPut==='function') await w.idbPut(JSON.parse(JSON.stringify(w.audit)));}catch(e){console.warn('CRVT sauvegarde champs câble',e);}
+    };
+    dist.addEventListener('input',save); type.addEventListener('change',save); comm.addEventListener('change',save);
+    return true;
+  }catch(e){console.warn('CRVT champs Informations',e);return false;}
+}
+
 let reportScaleObserver=null;
 function fitReportPreview(reportFrame){
   try{
@@ -108,11 +142,12 @@ frame.addEventListener('load',()=>{
  const t=setInterval(()=>{
    const h=patchHistoryButtons();
    const p=patchTableau();
+   const i=patchInformations();
    watchReportOverlay();
-   if((h&&p)||++n>60)clearInterval(t);
+   if((h&&p&&i)||++n>60)clearInterval(t);
  },250);
  try{
-   const mo=new MutationObserver(()=>watchReportOverlay());
+   const mo=new MutationObserver(()=>{patchInformations();watchReportOverlay();});
    mo.observe(frame.contentDocument.body,{childList:true,subtree:true});
  }catch(e){}
 });
