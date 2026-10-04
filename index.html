@@ -202,7 +202,6 @@ header{position:fixed !important;top:0 !important;left:0 !important;right:0 !imp
 .quickNavInner{overscroll-behavior-x:contain;touch-action:pan-x;overflow-x:auto;overflow-y:hidden;}
 @media print{body{padding-top:0 !important;}header{position:static !important;display:none !important;}#quickNav{display:none !important;}}
 </style>
-</style>
 <style>
 /* V20 — outils pro terrain */
 .v20Tools{border:1px solid #d7e8ef;background:linear-gradient(180deg,#fff,#f6fbfd);box-shadow:0 12px 35px rgba(15,83,112,.10)}
@@ -238,7 +237,7 @@ const common=[
 ["puissance","Puissance souscrite","select:3 kVA|6 kVA|9 kVA|12 kVA|15 kVA|18 kVA|24 kVA|36 kVA|Autre"],["compteur","Type de Compteur","select:Monophasé|Triphasé|Autre"],
 ["divisionnaire","Installation d’un tableau divisionnaire","select:Oui|Non"],["typeborne","Type de borne","select:Monophasé|Triphasé|Autre"],
 ["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"]
-];
+["distance","Distance (m)","text"],["typeCable","Type de câble","select:3G10|5G10"],];
 const modules={
 tableau:[
 ["place","Place disponible dans le tableau ?","select:Oui|Non"]
@@ -1585,6 +1584,8 @@ header{position:fixed !important;top:0 !important;left:0 !important;right:0 !imp
   update();
 })();
 <\/script>
+<!-- crvt-pwa-registration -->
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}</script>
 </body></html>`;
 // Affichage dans la même page : aucun onglet about:srcdoc et retour CRVT toujours possible.
 const oldOverlay=document.getElementById("crvtReportOverlay");

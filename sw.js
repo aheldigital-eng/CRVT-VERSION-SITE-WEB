@@ -1,4 +1,4 @@
-const CACHE = 'crvt-pwa-v4';
+const CACHE = 'crvt-pwa-v5';
 const BASE = self.registration.scope;
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(c => c.add(BASE)).then(() => self.skipWaiting()));
