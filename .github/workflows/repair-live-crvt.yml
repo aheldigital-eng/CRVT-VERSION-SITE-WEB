@@ -2,7 +2,7 @@ name: Repair live CRVT
 
 on:
   workflow_run:
-    workflows: ["Make CRVT installable as PWA"]
+    workflows: ["CRVT crop zoom"]
     types: [completed]
 
 permissions:
@@ -29,7 +29,6 @@ jobs:
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
 
-          # Make sure the modern CRVT logo is visible inside the application header.
           logo_css = '''
           <style id="crvt-live-logo-fix">
           .crvtLiveBrand{display:flex;align-items:center;gap:11px;min-width:0}
@@ -46,56 +45,36 @@ jobs:
           if n != 1:
               raise SystemExit('En-tête CRVT introuvable')
 
-          # Robust deletion fallback. It catches the existing "Supprimer" buttons before
-          # their inline handler, deletes the exact IndexedDB record, then refreshes history.
           delete_js = r'''
-          <!-- CRVT LIVE DELETE FIX V1 -->
+          <!-- CRVT LIVE DELETE FIX V2 -->
           <script id="crvt-live-delete-fix">
           (function(){
             const DB='auditTerrainV26DB', STORE='audits';
-            function removeAudit(id){
-              return new Promise((resolve,reject)=>{
-                const req=indexedDB.open(DB,1);
-                req.onerror=()=>reject(req.error||new Error('IndexedDB inaccessible'));
-                req.onsuccess=()=>{
-                  const db=req.result;
-                  if(!db.objectStoreNames.contains(STORE)){db.close();reject(new Error('Store audits introuvable'));return;}
-                  const tx=db.transaction(STORE,'readwrite');
-                  tx.objectStore(STORE).delete(id);
-                  tx.oncomplete=()=>{db.close();resolve(true)};
-                  tx.onerror=()=>{db.close();reject(tx.error||new Error('Suppression impossible'))};
-                };
-              });
-            }
-            function extractId(btn){
-              const a=btn.getAttribute('onclick')||'';
-              const m=a.match(/deleteAudit\(\s*([0-9]+)\s*\)/);
-              return m?Number(m[1]):null;
-            }
+            function removeAudit(id){return new Promise((resolve,reject)=>{
+              const req=indexedDB.open(DB,1);
+              req.onerror=()=>reject(req.error||new Error('IndexedDB inaccessible'));
+              req.onsuccess=()=>{const db=req.result;
+                if(!db.objectStoreNames.contains(STORE)){db.close();reject(new Error('Store audits introuvable'));return;}
+                const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).delete(id);
+                tx.oncomplete=()=>{db.close();resolve(true)};tx.onerror=()=>{db.close();reject(tx.error||new Error('Suppression impossible'))};
+              };
+            })}
+            function extractId(btn){const a=btn.getAttribute('onclick')||'';const m=a.match(/deleteAudit\(\s*([0-9]+)\s*\)/);return m?Number(m[1]):null}
             document.addEventListener('click',async function(ev){
-              const btn=ev.target.closest&&ev.target.closest('button');
-              if(!btn)return;
-              const text=(btn.textContent||'').trim().toLowerCase();
-              if(!text.includes('supprimer'))return;
-              const id=extractId(btn);
-              if(id===null)return;
+              const btn=ev.target.closest&&ev.target.closest('button');if(!btn)return;
+              const text=(btn.textContent||'').trim().toLowerCase();if(!text.includes('supprimer'))return;
+              const id=extractId(btn);if(id===null)return;
               ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
               if(!window.confirm('Supprimer définitivement cet audit enregistré ?'))return;
               try{
                 await removeAudit(id);
-                const card=btn.closest('.item');
-                if(card)card.remove();
-                if(typeof history==='function'){
-                  try{await history()}catch(e){}
-                } else if(typeof renderHistory==='function'){
-                  try{await renderHistory()}catch(e){}
-                }
-                if(typeof toast==='function')toast('Audit supprimé');
+                const card=btn.closest('.item');if(card)card.remove();
+                if(typeof window.loadHistory==='function'){try{await window.loadHistory()}catch(e){}}
+                if(typeof window.historyAudits==='function'){try{await window.historyAudits()}catch(e){}}
+                if(typeof window.render==='function'){try{window.render()}catch(e){}}
+                if(typeof window.toast==='function')window.toast('Audit supprimé');
                 else alert('Audit supprimé');
-              }catch(e){
-                console.error('CRVT suppression',e);
-                alert('Impossible de supprimer cet audit.');
-              }
+              }catch(e){console.error('CRVT suppression',e);alert('Impossible de supprimer cet audit.')}
             },true);
           })();
           </script>
