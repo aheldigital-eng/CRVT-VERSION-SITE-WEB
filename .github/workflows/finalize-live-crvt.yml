@@ -1,0 +1,50 @@
+name: Finalize live CRVT
+
+on:
+  workflow_run:
+    workflows: ["Repair live CRVT"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout published gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Escape report template closing script tags
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old = '})();\\n</script>\\n</body></html>`'
+          new = '})();\\n<\\/script>\\n</body></html>`'
+          if old in s:
+              s = s.replace(old, new, 1)
+              p.write_text(s, encoding='utf-8')
+              print('Fixed raw-code rendering in the report template.')
+          else:
+              print('No unescaped report-template closing script tag found.')
+
+      - name: Publish final repair
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Finalize CRVT report script parsing'
+          for i in 1 2 3; do
+            git pull --rebase origin gh-pages || true
+            if git push origin gh-pages; then exit 0; fi
+            sleep 3
+          done
+          exit 1
