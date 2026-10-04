@@ -210,6 +210,14 @@ header{position:fixed !important;top:0 !important;left:0 !important;right:0 !imp
 <style id="crvt-crop-v1">
 .crvt-crop-overlay{pointer-events:none}
 </style>
+
+<style id="crvt-crop-zoom-v1">
+.crvt-crop-zoom-tools{grid-column:1/-1;display:flex;gap:6px;align-items:center;justify-content:center;padding:4px;background:#eef7fa;border:1px solid #dbe5ec;border-radius:10px}
+.crvt-crop-zoom-tools button{border:1px solid #b9d4df;background:#fff;color:#0b6e9e;border-radius:9px;min-width:48px;min-height:38px;font-weight:900;font-size:13px;cursor:pointer;touch-action:manipulation}
+.crvt-crop-zoom-tools button:active{transform:scale(.97)}
+.crvt-crop-zoom-tools .crvt-zoom-value{min-width:64px;text-align:center;font-size:12px;font-weight:900;color:#173247}
+.crvt-annotation-stage.crvt-zoomed{align-items:flex-start;justify-content:flex-start}
+</style>
 </head>
 <body>
 <header><h1>CRVT — Compte rendu de visite technique</h1><div class="sub">Audit technique • photos • annotations • légendes • sauvegarde • partage • rapport dynamique</div></header>
@@ -990,7 +998,13 @@ function annotate(sec,i){
       <button type="button" class="crvt-tool" id="line">╱<span>Ligne</span></button>
       <button type="button" class="crvt-tool" id="circle">⭕<span>Cercle</span></button>
       <button type="button" class="crvt-tool" id="rect">▭<span>Rectangle</span></button>
-      <button type="button" class="crvt-tool" id="text">T<span>Texte</span></button><button type="button" class="crvt-tool" id="crop">✂️<span>Rogner</span></button>
+      <button type="button" class="crvt-tool" id="text">T<span>Texte</span></button>
+      <div class="crvt-crop-zoom-tools" aria-label="Zoom photo">
+        <button type="button" id="zoomOut" title="Réduire le zoom">🔍−</button>
+        <span class="crvt-zoom-value" id="zoomValue">100 %</span>
+        <button type="button" id="zoomReset" title="Réinitialiser le zoom">100%</button>
+        <button type="button" id="zoomIn" title="Agrandir le zoom">🔍+</button>
+      </div><button type="button" class="crvt-tool" id="crop">✂️<span>Rogner</span></button>
 
       <label class="crvt-control"><span>Trait</span><select id="strokeStyle"><option value="solid">━ Plein</option><option value="dashed">╌ Pointillé</option></select></label>
       <label class="crvt-control"><span>Couleur</span><select id="color"><option value="#e11d48">🔴 Rouge</option><option value="#2563eb">🔵 Bleu</option><option value="#16a34a">🟢 Vert</option><option value="#f59e0b">🟠 Orange</option><option value="#000000">⚫ Noir</option><option value="#ffffff">⚪ Blanc</option></select></label>
@@ -1038,7 +1052,8 @@ function annotate(sec,i){
 
   const c=m.querySelector("canvas"),ctx=c.getContext("2d"),img=new Image();
   let objects=JSON.parse(JSON.stringify(photo.annotations||[]));
-  let tool="select",color="#e11d48",strokeStyle="solid",drawing=null,drawingBefore=null,selected=-1,drag=null; let cropStart=null,cropRect=null;
+  let tool="select",color="#e11d48",strokeStyle="solid",drawing=null,drawingBefore=null,selected=-1,drag=null;
+  let crvtZoom=1; let cropStart=null,cropRect=null;
   let undoStack=[],redoStack=[];
 
   function snapshot(){return JSON.parse(JSON.stringify(objects));}
@@ -1053,8 +1068,34 @@ function annotate(sec,i){
     const s=Math.min(maxW/img.naturalWidth,maxH/img.naturalHeight,1);
     c.width=Math.max(1,Math.round(img.naturalWidth*s));
     c.height=Math.max(1,Math.round(img.naturalHeight*s));
+    applyCrvtZoom();
     draw();
   }
+  function applyCrvtZoom(){
+    const stage=m.querySelector(".crvt-annotation-stage");
+    const value=m.querySelector("#zoomValue");
+    if(!c.width||!c.height)return;
+    const z=Math.max(.75,Math.min(3,crvtZoom));
+    crvtZoom=z;
+    c.style.width=Math.round(c.width*z)+"px";
+    c.style.height=Math.round(c.height*z)+"px";
+    if(stage)stage.classList.toggle("crvt-zoomed",z>1.01);
+    if(value)value.textContent=Math.round(z*100)+" %";
+  }
+  function setCrvtZoom(z){
+    crvtZoom=Math.max(.75,Math.min(3,z));
+    applyCrvtZoom();
+    draw();
+  }
+  m.addEventListener("click",e=>{
+    const b=e.target.closest("#zoomIn,#zoomOut,#zoomReset");
+    if(!b)return;
+    e.preventDefault();e.stopPropagation();
+    if(b.id==="zoomIn")setCrvtZoom(crvtZoom+.25);
+    else if(b.id==="zoomOut")setCrvtZoom(crvtZoom-.25);
+    else setCrvtZoom(1);
+  });
+
   img.onload=()=>{fitCanvas();setTimeout(fitCanvas,80)};
   img.src=src;
 
@@ -1620,6 +1661,7 @@ header{position:fixed !important;top:0 !important;left:0 !important;right:0 !imp
 <\/script>
 <!-- crvt-pwa-registration -->
 <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}<\/script>
+<!-- CRVT CROP ZOOM V1 -->
 </body></html>`;
 // Affichage dans la même page : aucun onglet about:srcdoc et retour CRVT toujours possible.
 const oldOverlay=document.getElementById("crvtReportOverlay");
