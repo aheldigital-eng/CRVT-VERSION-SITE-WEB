@@ -41,7 +41,7 @@ jobs:
           EOF
 
           cat > sw.js <<'EOF'
-          const CACHE = 'crvt-pwa-v5';
+          const CACHE = 'crvt-pwa-v6';
           const BASE = self.registration.scope;
           self.addEventListener('install', event => {
             event.waitUntil(caches.open(CACHE).then(c => c.add(BASE)).then(() => self.skipWaiting()));
@@ -70,12 +70,12 @@ jobs:
           s = s.replace('</style>\n</style>\n<style>\n/* V20 — outils pro terrain */', '</style>\n<style>\n/* V20 — outils pro terrain */', 1)
           s = s.replace('</style>\r\n</style>\r\n<style>\r\n/* V20 — outils pro terrain */', '</style>\r\n<style>\r\n/* V20 — outils pro terrain */', 1)
 
-          # Add the two requested fields to the Informations module exactly once.
-          if '"distance","Distance (m)"' not in s:
-              m = re.search(r'(const common\s*=\s*\[[\s\S]*?)(\];)', s)
-              if m:
-                  insertion = '["distance","Distance (m)","text"],["typeCable","Type de câble","select:3G10|5G10"],'
-                  s = s[:m.end(1)] + insertion + s[m.end(1):]
+          # Add the requested Informations fields exactly once.
+          if '"cablecom","Câble de communication"' not in s:
+              needle = '["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"]'
+              addition = ',["distance","Distance (m)","text"],["typeCable","Type de câble","select:3G10|5G10"],["cablecom","Câble de communication","select:Oui|Non"]'
+              if needle in s:
+                  s = s.replace(needle, needle + addition, 1)
 
           marker = '</body>'
           reg = "<!-- crvt-pwa-registration -->\n<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}</script>\n"
@@ -115,5 +115,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html manifest.json sw.js icon-192.png icon-512.png
           git diff --cached --quiet && exit 0
-          git commit -m 'Add distance and cable type to CRVT information'
+          git commit -m 'Add communication cable choice to CRVT'
           git push origin gh-pages
