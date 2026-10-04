@@ -1,4 +1,4 @@
-name: Make CRVT installable as PWA
+name: Deploy CRVT stable
 
 on:
   push:
@@ -9,56 +9,58 @@ permissions:
   contents: write
 
 jobs:
-  pwa:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout published gh-pages
+      - name: Checkout source
         uses: actions/checkout@v4
         with:
-          ref: gh-pages
-          fetch-depth: 1
-          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
-      - name: Add PWA files
+      - name: Prepare stable CRVT
+        shell: python
         run: |
-          cat > manifest.json <<'EOF'
-          {
-            "name": "CRVT — Compte rendu de visite technique",
-            "short_name": "CRVT",
-            "lang": "fr-FR",
-            "start_url": "./crvt-pwa.html?v=18",
-            "scope": "./",
-            "display": "standalone",
-            "orientation": "portrait",
-            "background_color": "#f1f5f9",
-            "theme_color": "#0b6e9e",
-            "description": "Compte rendu de visite technique CRVT.",
-            "icons": [
-              {"src":"crvt-icon-192.png?v=5","sizes":"192x192","type":"image/png","purpose":"any"},
-              {"src":"crvt-icon-512.png?v=5","sizes":"512x512","type":"image/png","purpose":"maskable"}
-            ]
-          }
-          EOF
+          from pathlib import Path
+          import re
 
-          cat > sw.js <<'EOF'
-          const CACHE = 'crvt-pwa-v13';
-          const BASE = self.registration.scope;
-          self.addEventListener('install', event => {
-            event.waitUntil(caches.open(CACHE).then(c => c.add(BASE)).then(() => self.skipWaiting()));
-          });
-          self.addEventListener('activate', event => {
-            event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
-          });
-          self.addEventListener('fetch', event => {
-            if (event.request.method !== 'GET') return;
-            event.respondWith(fetch(event.request).then(response => {
-              const copy = response.clone();
-              caches.open(CACHE).then(c => c.put(event.request, copy)).catch(() => {});
-              return response;
-            }).catch(() => caches.match(event.request).then(r => r || caches.match(BASE))));
-          });
-          EOF
+          src = Path('index-19.html')
+          if not src.exists():
+              raise SystemExit('Stable CRVT source index-19.html not found')
+          s = src.read_text(encoding='utf-8')
 
+          # Repair the malformed style nesting that previously caused the live page
+          # to display raw JavaScript/HTML instead of the application.
+          s = s.replace('</style>\n</style>\n<style>\n/* V20 — outils pro terrain */', '</style>\n<style>\n/* V20 — outils pro terrain */', 1)
+          s = s.replace('</style>\r\n</style>\r\n<style>\r\n/* V20 — outils pro terrain */', '</style>\r\n<style>\r\n/* V20 — outils pro terrain */', 1)
+
+          # Keep the working IndexedDB deletion implementation. The source contains
+          # an obsolete localStorage deleteAudit later in the file which overrides it.
+          s = re.sub(r'\nfunction deleteAudit\(id\)\{\n  if\(!confirm\("Supprimer définitivement cet audit \?"\)\) return;.*?\n\}\nfunction exportAuditJSON', '\nfunction exportAuditJSON', s, count=1, flags=re.S)
+
+          # Audit history naming: CRVT ENSIO - donneur X client.
+          old = '${esc(x.client||"Sans nom")}'
+          new = '${esc("CRVT ENSIO - " + (x.donneur||"Sans donneur") + " X " + (x.client||"Sans nom"))}'
+          if old in s:
+              s = s.replace(old, new, 1)
+
+          # Modern CRVT header logo.
+          logo_css = '''
+          <style id="crvt-modern-logo">
+          .crvtBrand{display:flex;align-items:center;gap:12px;min-width:0}.crvtBrandLogo{width:58px;height:58px;flex:0 0 58px;object-fit:contain;background:#fff;border-radius:14px;padding:5px;box-shadow:0 4px 14px #001f3a33}.crvtBrandText{min-width:0}.crvtBrandText h1{margin:0;font-size:21px;line-height:1.12}.crvtBrandText .sub{margin-top:4px}.crvtBrandText .crvtKicker{font-size:10px;font-weight:900;letter-spacing:2px;opacity:.9;margin-bottom:3px}@media(max-width:620px){.crvtBrandLogo{width:50px;height:50px;flex-basis:50px}.crvtBrandText h1{font-size:18px}.crvtBrandText .sub{font-size:11px}}
+          </style>
+          '''
+          if 'id="crvt-modern-logo"' not in s:
+              s = s.replace('</head>', logo_css + '\n</head>', 1)
+          header = '<header><div class="crvtBrand"><img class="crvtBrandLogo" src="crvt-logo.svg?v=clean1" alt="CRVT"><div class="crvtBrandText"><div class="crvtKicker">CRVT</div><h1>Compte rendu de visite technique</h1><div class="sub">Audit technique • photos • annotations • légendes • sauvegarde • partage • rapport dynamique</div></div></div></header>'
+          s, n = re.subn(r'<header>.*?</header>', header, s, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit('CRVT header not found')
+
+          Path('index.html').write_text(s, encoding='utf-8')
+          print('Stable CRVT prepared successfully')
+
+      - name: Create CRVT logo
+        run: |
           cat > crvt-logo.svg <<'EOF'
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img" aria-label="CRVT Compte rendu de visite technique">
             <defs>
@@ -69,7 +71,7 @@ jobs:
               <path d="M18 96 140 10l122 86" fill="none" stroke="url(#navy)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M42 91v105h64V85h68v111h64V91" fill="none" stroke="url(#navy)" stroke-width="22" stroke-linejoin="round"/>
               <rect x="72" y="57" width="132" height="146" rx="13" fill="#fff" stroke="url(#navy)" stroke-width="10"/>
-              <path d="M112 49h52v27h-52z" fill="url(#navy)" rx="8"/>
+              <path d="M112 49h52v27h-52z" fill="url(#navy)"/>
               <g fill="url(#orange)"><rect x="91" y="91" width="24" height="24" rx="5"/><rect x="91" y="128" width="24" height="24" rx="5"/><rect x="91" y="165" width="24" height="24" rx="5"/></g>
               <g stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m96 103 6 6 10-12"/><path d="m96 140 6 6 10-12"/><path d="m96 177 6 6 10-12"/></g>
               <g fill="#9fb0bf"><rect x="124" y="95" width="58" height="7" rx="3.5"/><rect x="124" y="108" width="42" height="6" rx="3"/><rect x="124" y="132" width="58" height="7" rx="3.5"/><rect x="124" y="145" width="42" height="6" rx="3"/><rect x="124" y="169" width="58" height="7" rx="3.5"/><rect x="124" y="182" width="42" height="6" rx="3"/></g>
@@ -80,104 +82,61 @@ jobs:
           </svg>
           EOF
 
+      - name: Prepare PWA files
+        run: |
+          git fetch origin gh-pages --depth=1 || true
+          git show origin/gh-pages:crvt-icon-192.png > crvt-icon-192.png 2>/dev/null || true
+          git show origin/gh-pages:crvt-icon-512.png > crvt-icon-512.png 2>/dev/null || true
+          cat > manifest.json <<'EOF'
+          {
+            "name":"CRVT — Compte rendu de visite technique",
+            "short_name":"CRVT",
+            "lang":"fr-FR",
+            "start_url":"./index.html?v=clean1",
+            "scope":"./",
+            "display":"standalone",
+            "orientation":"portrait",
+            "background_color":"#f1f5f9",
+            "theme_color":"#0b6e9e",
+            "description":"Compte rendu de visite technique CRVT.",
+            "icons":[
+              {"src":"crvt-icon-192.png?v=clean1","sizes":"192x192","type":"image/png","purpose":"any"},
+              {"src":"crvt-icon-512.png?v=clean1","sizes":"512x512","type":"image/png","purpose":"maskable"},
+              {"src":"crvt-logo.svg?v=clean1","sizes":"any","type":"image/svg+xml","purpose":"any"}
+            ]
+          }
+          EOF
+          cat > sw.js <<'EOF'
+          const CACHE='crvt-clean-v1';
+          const BASE=self.registration.scope;
+          self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll([BASE,'index.html','manifest.json','crvt-logo.svg'])).then(()=>self.skipWaiting())));
+          self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+          self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(CACHE).then(x=>x.put(e.request,c)).catch(()=>{});return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match(BASE))));});
+          EOF
           python3 - <<'PY'
           from pathlib import Path
-          import struct, zlib, binascii, re
-          p = Path('index.html')
-          s = p.read_text(encoding='utf-8')
-          s = s.replace('</style>\n</style>\n<style>\n/* V20 — outils pro terrain */', '</style>\n<style>\n/* V20 — outils pro terrain */', 1)
-          s = s.replace('</style>\r\n</style>\r\n<style>\r\n/* V20 — outils pro terrain */', '</style>\r\n<style>\r\n/* V20 — outils pro terrain */', 1)
-          common = '''const common=[
-["puissance","Puissance souscrite","select:3 kVA|6 kVA|9 kVA|12 kVA|15 kVA|18 kVA|24 kVA|36 kVA|Autre"],["compteur","Type de Compteur","select:Monophasé|Triphasé|Autre"],
-["divisionnaire","Installation d’un tableau divisionnaire","select:Oui|Non"],["typeborne","Type de borne","select:Monophasé|Triphasé|Autre"],
-["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"],
-["distance","Distance (m)","text"],["typeCable","Type de câble","select:3G10|5G10"],["cablecom","Câble de communication","select:Oui|Non"]
-];'''
-          s, n = re.subn(r'const common=\[.*?\];', common, s, count=1, flags=re.S)
-          if n != 1: raise SystemExit('Impossible de normaliser const common')
-
-          old_history = '${esc(x.client||"Sans nom")}'
-          new_history = '${esc((x.donneur ? ("CRVT ENSIO - " + x.donneur + " X ") : "CRVT ENSIO - ") + (x.client || "Sans nom"))}'
-          if old_history in s:
-              s = s.replace(old_history, new_history, 1)
-
-          if 'function crvtAuditDisplayName' not in s:
-              helper = 'function crvtAuditDisplayName(a){return "CRVT ENSIO - " + (a.donneur||"Sans donneur") + " X " + (a.client||"Sans nom");}\n'
-              pos = s.find('function fresh()')
-              if pos >= 0: s = s[:pos] + helper + s[pos:]
-
-          # Modern CRVT logo in the application header.
-          logo_css = '''
-          <style id="crvt-modern-logo">
-          .crvtBrand{display:flex;align-items:center;gap:12px;min-width:0}.crvtBrandLogo{width:58px;height:58px;flex:0 0 58px;object-fit:contain;background:#fff;border-radius:14px;padding:5px;box-shadow:0 4px 14px #001f3a33}.crvtBrandText{min-width:0}.crvtBrandText h1{margin:0;font-size:21px;line-height:1.12}.crvtBrandText .sub{margin-top:4px}.crvtBrandText .crvtKicker{font-size:10px;font-weight:900;letter-spacing:2px;opacity:.9;margin-bottom:3px}@media(max-width:620px){.crvtBrandLogo{width:50px;height:50px;flex-basis:50px}.crvtBrandText h1{font-size:18px}.crvtBrandText .sub{font-size:11px}}
-          </style>
-          '''
-          if 'id="crvt-modern-logo"' not in s and '</head>' in s:
-              s = s.replace('</head>', logo_css + '\n</head>', 1)
-          new_header = '<header><div class="crvtBrand"><img class="crvtBrandLogo" src="crvt-logo.svg?v=1" alt="CRVT"><div class="crvtBrandText"><div class="crvtKicker">CRVT</div><h1>Compte rendu de visite technique</h1><div class="sub">Audit technique • photos • annotations • légendes • sauvegarde • partage • rapport dynamique</div></div></div></header>'
-          s, hn = re.subn(r'<header>.*?</header>', new_header, s, count=1, flags=re.S)
-          if hn != 1: raise SystemExit('En-tête CRVT introuvable')
-
-          recovery_css = '''
-          <style id="crvt-emergency-recovery-style">
-          .crvtRecovery{position:fixed;left:10px;right:10px;bottom:14px;z-index:2147483001;background:#073b4c;color:#fff;border-radius:14px;box-shadow:0 12px 35px #0008;padding:13px 14px;display:none;font-family:Arial,sans-serif}
-          .crvtRecovery.open{display:block}.crvtRecovery b{display:block;font-size:14px;margin-bottom:4px}.crvtRecovery span{display:block;font-size:12px;opacity:.9;margin-bottom:9px}.crvtRecovery .actions{display:flex;gap:8px}.crvtRecovery button{border:0;border-radius:9px;padding:9px 12px;font-weight:800;font-size:13px;cursor:pointer}.crvtRecovery .restore{background:#12a6c9;color:#fff}.crvtRecovery .ignore{background:#e2e8f0;color:#17202a}
-          </style>
-          '''
-          if 'crvt-emergency-recovery-style' not in s and '</head>' in s:
-              s = s.replace('</head>', recovery_css + '\n</head>', 1)
-
-          recovery_js = r'''
-          <!-- CRVT EMERGENCY RECOVERY V1 -->
-          <script id="crvt-emergency-recovery">
-          (function(){
-            const KEY='crvt_emergency_recovery_v1';
-            const TTL=48*60*60*1000;
-            function safeClone(){try{return JSON.parse(JSON.stringify(audit));}catch(e){return null;}}
-            function snapshot(){try{if(typeof audit==='undefined'||!audit||audit.status==='Terminé')return;const a=safeClone();if(!a)return;localStorage.setItem(KEY,JSON.stringify({savedAt:Date.now(),audit:a,scrollY:window.scrollY||0}));}catch(e){}}
-            function getSnapshot(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){return null}}
-            function clearSnapshot(){try{localStorage.removeItem(KEY)}catch(e){}}
-            function showRecovery(snap){if(document.getElementById('crvtEmergencyRecovery'))return;const box=document.createElement('div');box.id='crvtEmergencyRecovery';box.className='crvtRecovery open';const when=new Date(snap.savedAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});box.innerHTML='<b>🔄 Une sauvegarde de secours a été trouvée</b><span>Elle est plus récente que la dernière sauvegarde normale ('+when+'). Voulez-vous récupérer cet audit ?</span><div class="actions"><button class="restore">Restaurer l’audit</button><button class="ignore">Ignorer</button></div>';document.body.appendChild(box);box.querySelector('.restore').onclick=function(){try{audit=snap.audit;if(typeof save==='function')save();if(typeof render==='function')render();try{window.scrollTo(0,snap.scrollY||0)}catch(e){}clearSnapshot();box.remove();if(typeof toast==='function')toast('Audit récupéré après fermeture ou incident.')}catch(e){console.warn('Récupération CRVT impossible',e)}};box.querySelector('.ignore').onclick=function(){clearSnapshot();box.remove()}}
-            function checkRecovery(){const snap=getSnapshot();if(!snap||!snap.audit||!snap.savedAt)return;if(Date.now()-snap.savedAt>TTL){clearSnapshot();return}try{const currentId=(typeof audit!=='undefined'&&audit)?audit.id:null;const snapId=snap.audit.id;const normalTime=(typeof audit!=='undefined'&&audit&&audit.updatedAt)?Date.parse(audit.updatedAt):0;if(currentId===snapId&&snap.savedAt>normalTime+1000&&snap.audit.status!=='Terminé')showRecovery(snap)}catch(e){}}
-            setInterval(snapshot,2000);window.addEventListener('beforeunload',snapshot);document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')snapshot()});window.addEventListener('load',function(){setTimeout(checkRecovery,900)});setTimeout(checkRecovery,1600);
-          })();
-          </script>
-          '''
-          if 'id="crvt-emergency-recovery"' not in s and '</body>' in s:
-              s = s.replace('</body>', recovery_js + '\n</body>', 1)
-
-          marker = '</body>'
-          reg = "<!-- crvt-pwa-registration -->\n<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}</script>\n"
-          if 'crvt-pwa-registration' not in s and marker in s: s = s.replace(marker, reg + marker, 1)
-          p.write_text(s, encoding='utf-8')
-
-          def chunk(kind, data):
-              return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', binascii.crc32(kind + data) & 0xffffffff)
-          FONT={'C':["11111","10000","10000","10000","10000","10000","11111"],'R':["11110","10001","10001","11110","10100","10010","10001"],'V':["10001","10001","10001","10001","10001","01010","00100"],'T':["11111","00100","00100","00100","00100","00100","00100"]}
-          def make_png(path,size):
-              bg=(7,87,119); fg=(255,255,255); pix=[list(bg)*size for _ in range(size)]; scale=max(4,size//80); gap=scale*2
-              word_w=sum(len(FONT[ch][0])*scale for ch in 'CRVT')+gap*3; word_h=7*scale; x=(size-word_w)//2; y=(size-word_h)//2
-              for ch in 'CRVT':
-                  pat=FONT[ch]
-                  for yy,row in enumerate(pat):
-                      for xx,val in enumerate(row):
-                          if val=='1':
-                              for dy in range(scale):
-                                  for dx in range(scale):
-                                      px=x+xx*scale+dx; py=y+yy*scale+dy
-                                      if 0<=px<size and 0<=py<size: pix[py][px*3:px*3+3]=list(fg)
-                  x += len(pat[0])*scale+gap
-              raw=zlib.compress(b''.join(bytes([0])+bytes(row) for row in pix),9)
-              out=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',size,size,8,2,0,0,0))+chunk(b'IDAT',raw)+chunk(b'IEND',b'')
-              Path(path).write_bytes(out)
-          make_png('crvt-icon-192.png',192); make_png('crvt-icon-512.png',512)
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          reg="<!-- crvt-pwa-registration -->\n<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}</script>\n"
+          if 'crvt-pwa-registration' not in s:
+              s=s.replace('</body>',reg+'</body>',1)
+          p.write_text(s,encoding='utf-8')
           PY
 
-      - name: Publish PWA
+      - name: Publish to gh-pages
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html manifest.json sw.js crvt-icon-192.png crvt-icon-512.png crvt-logo.svg
+          git fetch origin gh-pages:gh-pages || true
+          git checkout gh-pages
+          cp ../crvt-clean-placeholder /dev/null 2>/dev/null || true
+          git checkout main -- index.html
+          cp ../crvt-logo.svg crvt-logo.svg 2>/dev/null || true
+          cp ../manifest.json manifest.json 2>/dev/null || true
+          cp ../sw.js sw.js 2>/dev/null || true
+          cp ../crvt-icon-192.png crvt-icon-192.png 2>/dev/null || true
+          cp ../crvt-icon-512.png crvt-icon-512.png 2>/dev/null || true
+          git add index.html crvt-logo.svg manifest.json sw.js crvt-icon-192.png crvt-icon-512.png
           git diff --cached --quiet && exit 0
-          git commit -m 'Integrate modern CRVT logo'
+          git commit -m 'Publish clean CRVT application'
           git push origin gh-pages
