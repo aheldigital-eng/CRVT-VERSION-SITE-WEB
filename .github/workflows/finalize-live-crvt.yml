@@ -28,14 +28,15 @@ jobs:
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          old = '})();\\n</script>\\n</body></html>`'
-          new = '})();\\n<\\/script>\\n</body></html>`'
-          if old in s:
-              s = s.replace(old, new, 1)
+          needle = '</script>\\n</body></html>`'
+          replacement = '<\\/script>\\n</body></html>`'
+          idx = s.rfind(needle)
+          if idx >= 0:
+              s = s[:idx] + replacement + s[idx + len(needle):]
               p.write_text(s, encoding='utf-8')
-              print('Fixed raw-code rendering in the report template.')
+              print('Fixed the final report-template closing script tag.')
           else:
-              print('No unescaped report-template closing script tag found.')
+              print('No matching report-template closing script tag found.')
 
       - name: Publish final repair
         run: |
