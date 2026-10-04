@@ -4,16 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b6e9e">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="./manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>CRVT — Compte rendu de visite technique</title>
 <style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f1f5f9}iframe{display:block;width:100%;height:100%;border:0;background:#f1f5f9}</style>
 </head>
 <body>
-<iframe id="crvt" src="./index.html?crvtfix=15" title="CRVT"></iframe>
+<iframe id="crvt" src="./index.html?crvtfix=16" title="CRVT"></iframe>
 <script>
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));}
 const frame=document.getElementById('crvt');
 function patchHistoryButtons(){try{const w=frame.contentWindow,d=frame.contentDocument;if(!w||!d)return false;w.deleteAudit=async function(id){if(!confirm('Supprimer définitivement cet audit enregistré ?'))return;try{const req=w.indexedDB.open('auditTerrainV26DB',1);await new Promise((resolve,reject)=>{req.onerror=()=>reject(req.error||new Error('IndexedDB indisponible'));req.onsuccess=()=>{const db=req.result;if(!db.objectStoreNames.contains('audits')){db.close();reject(new Error('Store audits introuvable'));return}const tx=db.transaction('audits','readwrite');tx.objectStore('audits').delete(id);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error||new Error('Suppression impossible'))};tx.onabort=()=>{db.close();reject(tx.error||new Error('Suppression annulée'))}}});if(typeof w.history==='function')await w.history();if(typeof w.toast==='function')w.toast('Audit supprimé')}catch(e){console.error('CRVT suppression audit',e);if(typeof w.toast==='function')w.toast('Impossible de supprimer cet audit.')}};return true}catch(e){return false}}
 function patchTableau(){try{const w=frame.contentWindow,d=frame.contentDocument;if(!w||!d||!w.audit||!w.renderFollowups)return false;w.audit.data.place='Oui';w.renderFollowups();const labels=[...d.querySelectorAll('label')];const label=labels.find(x=>(x.textContent||'').includes('Place disponible dans le tableau'));if(label){const box=label.parentElement;if(box)box.style.display='none'}return !!d.querySelector('#tableauFollow .photoActions')}catch(e){return false}}
