@@ -41,7 +41,7 @@ jobs:
           EOF
 
           cat > sw.js <<'EOF'
-          const CACHE = 'crvt-pwa-v11';
+          const CACHE = 'crvt-pwa-v12';
           const BASE = self.registration.scope;
           self.addEventListener('install', event => {
             event.waitUntil(caches.open(CACHE).then(c => c.add(BASE)).then(() => self.skipWaiting()));
@@ -75,7 +75,6 @@ jobs:
           s, n = re.subn(r'const common=\[.*?\];', common, s, count=1, flags=re.S)
           if n != 1: raise SystemExit('Impossible de normaliser const common')
 
-          # Nom automatique de l'audit dans l'historique : CRVT ENSIO - Donneur d'ordre X Client final
           old_history = '${esc(x.client||"Sans nom")}'
           new_history = '${esc((x.donneur ? ("CRVT ENSIO - " + x.donneur + " X ") : "CRVT ENSIO - ") + (x.client || "Sans nom"))}'
           if old_history in s:
@@ -85,6 +84,74 @@ jobs:
               helper = 'function crvtAuditDisplayName(a){return "CRVT ENSIO - " + (a.donneur||"Sans donneur") + " X " + (a.client||"Sans nom");}\n'
               pos = s.find('function fresh()')
               if pos >= 0: s = s[:pos] + helper + s[pos:]
+
+          # Emergency recovery: keep a lightweight JSON snapshot of the current
+          # in-memory audit. It is separate from the normal IndexedDB autosave.
+          # On restart, offer restoration only when the snapshot belongs to the
+          # same audit and is newer than the last normal save.
+          recovery_css = '''
+          <style id="crvt-emergency-recovery-style">
+          .crvtRecovery{position:fixed;left:10px;right:10px;bottom:14px;z-index:2147483001;background:#073b4c;color:#fff;border-radius:14px;box-shadow:0 12px 35px #0008;padding:13px 14px;display:none;font-family:Arial,sans-serif}
+          .crvtRecovery.open{display:block}.crvtRecovery b{display:block;font-size:14px;margin-bottom:4px}.crvtRecovery span{display:block;font-size:12px;opacity:.9;margin-bottom:9px}.crvtRecovery .actions{display:flex;gap:8px}.crvtRecovery button{border:0;border-radius:9px;padding:9px 12px;font-weight:800;font-size:13px;cursor:pointer}.crvtRecovery .restore{background:#12a6c9;color:#fff}.crvtRecovery .ignore{background:#e2e8f0;color:#17202a}
+          </style>
+          '''
+          if 'crvt-emergency-recovery-style' not in s and '</head>' in s:
+              s = s.replace('</head>', recovery_css + '\n</head>', 1)
+
+          recovery_js = r'''
+          <!-- CRVT EMERGENCY RECOVERY V1 -->
+          <script id="crvt-emergency-recovery">
+          (function(){
+            const KEY='crvt_emergency_recovery_v1';
+            const TTL=48*60*60*1000;
+            function safeClone(){try{return JSON.parse(JSON.stringify(audit));}catch(e){return null;}}
+            function snapshot(){
+              try{
+                if(typeof audit==='undefined'||!audit||audit.status==='Terminé') return;
+                const a=safeClone(); if(!a) return;
+                localStorage.setItem(KEY,JSON.stringify({savedAt:Date.now(),audit:a,scrollY:window.scrollY||0}));
+              }catch(e){}
+            }
+            function getSnapshot(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){return null}}
+            function clearSnapshot(){try{localStorage.removeItem(KEY)}catch(e){}}
+            function showRecovery(snap){
+              if(document.getElementById('crvtEmergencyRecovery')) return;
+              const box=document.createElement('div'); box.id='crvtEmergencyRecovery'; box.className='crvtRecovery open';
+              const when=new Date(snap.savedAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+              box.innerHTML='<b>🔄 Une sauvegarde de secours a été trouvée</b><span>Elle est plus récente que la dernière sauvegarde normale ('+when+'). Voulez-vous récupérer cet audit ?</span><div class="actions"><button class="restore">Restaurer l’audit</button><button class="ignore">Ignorer</button></div>';
+              document.body.appendChild(box);
+              box.querySelector('.restore').onclick=function(){
+                try{
+                  audit=snap.audit;
+                  if(typeof save==='function') save();
+                  if(typeof render==='function') render();
+                  try{window.scrollTo(0,snap.scrollY||0)}catch(e){}
+                  clearSnapshot(); box.remove();
+                  if(typeof toast==='function') toast('Audit récupéré après fermeture ou incident.');
+                }catch(e){console.warn('Récupération CRVT impossible',e)}
+              };
+              box.querySelector('.ignore').onclick=function(){clearSnapshot();box.remove()};
+            }
+            function checkRecovery(){
+              const snap=getSnapshot(); if(!snap||!snap.audit||!snap.savedAt) return;
+              if(Date.now()-snap.savedAt>TTL){clearSnapshot();return;}
+              try{
+                const currentId=(typeof audit!=='undefined'&&audit)?audit.id:null;
+                const snapId=snap.audit.id;
+                const normalTime=(typeof audit!=='undefined'&&audit&&audit.updatedAt)?Date.parse(audit.updatedAt):0;
+                if(currentId===snapId && snap.savedAt>normalTime+1000 && snap.audit.status!=='Terminé') showRecovery(snap);
+              }catch(e){}
+            }
+            setInterval(snapshot,2000);
+            window.addEventListener('beforeunload',snapshot);
+            document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')snapshot()});
+            window.addEventListener('load',function(){setTimeout(checkRecovery,900)});
+            setTimeout(checkRecovery,1600);
+          })();
+          </script>
+          '''
+          if 'id="crvt-emergency-recovery"' not in s and '</body>' in s:
+              s = s.replace('</body>', recovery_js + '\n</body>', 1)
 
           marker = '</body>'
           reg = "<!-- crvt-pwa-registration -->\n<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}</script>\n"
@@ -119,5 +186,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html manifest.json sw.js crvt-icon-192.png crvt-icon-512.png
           git diff --cached --quiet && exit 0
-          git commit -m 'Set automatic CRVT ENSIO audit names'
+          git commit -m 'Add CRVT emergency draft recovery'
           git push origin gh-pages
