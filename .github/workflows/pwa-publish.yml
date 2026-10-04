@@ -34,14 +34,14 @@ jobs:
             "theme_color": "#0b6e9e",
             "description": "Compte rendu de visite technique CRVT.",
             "icons": [
-              {"src":"icon-192.png?v=2","sizes":"192x192","type":"image/png","purpose":"any maskable"},
-              {"src":"icon-512.png?v=2","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+              {"src":"crvt-icon-192.png?v=3","sizes":"192x192","type":"image/png","purpose":"any"},
+              {"src":"crvt-icon-512.png?v=3","sizes":"512x512","type":"image/png","purpose":"maskable"}
             ]
           }
           EOF
 
           cat > sw.js <<'EOF'
-          const CACHE = 'crvt-pwa-v8';
+          const CACHE = 'crvt-pwa-v9';
           const BASE = self.registration.scope;
           self.addEventListener('install', event => {
             event.waitUntil(caches.open(CACHE).then(c => c.add(BASE)).then(() => self.skipWaiting()));
@@ -65,10 +65,8 @@ jobs:
 
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-
           s = s.replace('</style>\n</style>\n<style>\n/* V20 — outils pro terrain */', '</style>\n<style>\n/* V20 — outils pro terrain */', 1)
           s = s.replace('</style>\r\n</style>\r\n<style>\r\n/* V20 — outils pro terrain */', '</style>\r\n<style>\r\n/* V20 — outils pro terrain */', 1)
-
           common = '''const common=[
 ["puissance","Puissance souscrite","select:3 kVA|6 kVA|9 kVA|12 kVA|15 kVA|18 kVA|24 kVA|36 kVA|Autre"],["compteur","Type de Compteur","select:Monophasé|Triphasé|Autre"],
 ["divisionnaire","Installation d’un tableau divisionnaire","select:Oui|Non"],["typeborne","Type de borne","select:Monophasé|Triphasé|Autre"],
@@ -76,37 +74,27 @@ jobs:
 ["distance","Distance (m)","text"],["typeCable","Type de câble","select:3G10|5G10"],["cablecom","Câble de communication","select:Oui|Non"]
 ];'''
           s, n = re.subn(r'const common=\[.*?\];', common, s, count=1, flags=re.S)
-          if n != 1:
-              raise SystemExit('Impossible de normaliser const common')
-
+          if n != 1: raise SystemExit('Impossible de normaliser const common')
           marker = '</body>'
           reg = "<!-- crvt-pwa-registration -->\n<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}</script>\n"
-          if 'crvt-pwa-registration' not in s and marker in s:
-              s = s.replace(marker, reg + marker, 1)
+          if 'crvt-pwa-registration' not in s and marker in s: s = s.replace(marker, reg + marker, 1)
           p.write_text(s, encoding='utf-8')
 
           def chunk(kind, data):
               return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', binascii.crc32(kind + data) & 0xffffffff)
 
-          # Minimal CRVT wordmark rendered as a real PNG using only the Python stdlib.
-          FONT = {
+          FONT={
             'C':["11111","10000","10000","10000","10000","10000","11111"],
             'R':["11110","10001","10001","11110","10100","10010","10001"],
             'V':["10001","10001","10001","10001","10001","01010","00100"],
-            'T':["11111","00100","00100","00100","00100","00100","00100"]
-          }
+            'T':["11111","00100","00100","00100","00100","00100","00100"]}
 
-          def make_png(path, size):
-              bg=(11,110,158)
-              fg=(255,255,255)
+          def make_png(path,size):
+              bg=(7,87,119); fg=(255,255,255)
               pix=[list(bg)*size for _ in range(size)]
-              scale=max(3,size//80)
-              gap=scale*2
-              word_w=sum(len(FONT[ch][0])*scale for ch in 'CRVT') + gap*3
-              word_h=7*scale
-              x0=(size-word_w)//2
-              y0=(size-word_h)//2
-              x=x0
+              scale=max(4,size//80); gap=scale*2
+              word_w=sum(len(FONT[ch][0])*scale for ch in 'CRVT')+gap*3
+              word_h=7*scale; x=(size-word_w)//2; y=(size-word_h)//2
               for ch in 'CRVT':
                   pat=FONT[ch]
                   for yy,row in enumerate(pat):
@@ -114,27 +102,21 @@ jobs:
                           if val=='1':
                               for dy in range(scale):
                                   for dx in range(scale):
-                                      px=x+xx*scale+dx; py=y0+yy*scale+dy
-                                      if 0<=px<size and 0<=py<size:
-                                          pix[py][px*3:px*3+3]=list(fg)
-                  x += len(pat[0])*scale + gap
-              raw=b''.join(bytes([0])+bytes(row) for row in pix)
-              raw=zlib.compress(raw,9)
-              out=b'\x89PNG\r\n\x1a\n'
-              out+=chunk(b'IHDR', struct.pack('>IIBBBBB', size, size, 8, 2, 0, 0, 0))
-              out+=chunk(b'IDAT', raw)
-              out+=chunk(b'IEND', b'')
+                                      px=x+xx*scale+dx; py=y+yy*scale+dy
+                                      if 0<=px<size and 0<=py<size: pix[py][px*3:px*3+3]=list(fg)
+                  x += len(pat[0])*scale+gap
+              raw=zlib.compress(b''.join(bytes([0])+bytes(row) for row in pix),9)
+              out=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',size,size,8,2,0,0,0))+chunk(b'IDAT',raw)+chunk(b'IEND',b'')
               Path(path).write_bytes(out)
-
-          make_png('icon-192.png', 192)
-          make_png('icon-512.png', 512)
+          make_png('crvt-icon-192.png',192)
+          make_png('crvt-icon-512.png',512)
           PY
 
       - name: Publish PWA
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html manifest.json sw.js icon-192.png icon-512.png
+          git add index.html manifest.json sw.js crvt-icon-192.png crvt-icon-512.png
           git diff --cached --quiet && exit 0
-          git commit -m 'Use CRVT logo for PWA installation icon'
+          git commit -m 'Refresh CRVT branded PWA icons'
           git push origin gh-pages
