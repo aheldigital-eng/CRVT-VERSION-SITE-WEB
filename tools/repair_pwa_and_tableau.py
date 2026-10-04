@@ -3,62 +3,22 @@ from pathlib import Path
 
 p = Path('index.html')
 s = p.read_text(encoding='utf-8')
-original = s
 
-# Repair the malformed style nesting from the previous header/PWA patch.
-# V12 was missing its closing tag before V19; V14 also left a duplicate close.
-s, n1 = re.subn(
-    r'(@media print\{body\{padding-top:0 !important;\}header\{position:static !important;display:none !important;\}#quickNav\{display:none !important;\}\}\s*)<style id="crvt-v19-max-design">',
-    r'\1</style>\n<style id="crvt-v19-max-design">',
-    s,
-    count=1,
-)
-s, n2 = re.subn(r'</style>\s*</style>\s*</head>', '</style>\n</head>', s, count=1)
+# Repair malformed style nesting without changing validated UI sections.
+s = s.replace('</style>\n</style>\n<style>\n/* V20 — outils pro terrain */', '</style>\n<style>\n/* V20 — outils pro terrain */', 1)
+s = s.replace('</style>\r\n</style>\r\n<style>\r\n/* V20 — outils pro terrain */', '</style>\r\n<style>\r\n/* V20 — outils pro terrain */', 1)
+s = re.sub(r'</style>\s*</style>\s*</head>', '</style>\n</head>', s, count=1)
 
-# Keep the tableau photo system but remove references to the deleted
-# "Place disponible dans le tableau ?" question.
-s = s.replace(
-    'audit.data.commentaire||audit.data.place||audit.data.puissance||audit.data.compteur||audit.data.borne||audit.data.environnement||audit.data.position||audit.data.longueurCable||audit.data.typeCable||audit.data.cableCommunication',
-    'audit.data.commentaire||audit.data.puissance||audit.data.compteur||audit.data.borne||audit.data.environnement||audit.data.position||audit.data.longueurCable||audit.data.typeCable||audit.data.cableCommunication',
-)
-s = s.replace(
-    'if(key==="tableau") return !audit.sections.tableau?"warn":(audit.data.place && photoCount("tableau")?"ok":"warn");',
-    'if(key==="tableau") return !audit.sections.tableau?"warn":(photoCount("tableau")?"ok":"warn");',
-)
-s = s.replace(
-    'if(["place","passage","protection"].includes(e.dataset.field)) renderFollowups();',
-    'if(["passage","protection"].includes(e.dataset.field)) renderFollowups();',
-)
+# Normalize the Informations fields exactly once.
+common = '''const common=[
+["puissance","Puissance souscrite","select:3 kVA|6 kVA|9 kVA|12 kVA|15 kVA|18 kVA|24 kVA|36 kVA|Autre"],["compteur","Type de Compteur","select:Monophasé|Triphasé|Autre"],
+["divisionnaire","Installation d’un tableau divisionnaire","select:Oui|Non"],["typeborne","Type de borne","select:Monophasé|Triphasé|Autre"],
+["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"],
+["distance","Distance (m)","text"],["typeCable","Type de câble","select:3G10|5G10"],["cablecom","Câble de communication","select:Oui|Non"]
+];'''
+s, n = re.subn(r'const common=\[.*?\];', common, s, count=1, flags=re.S)
+if n != 1:
+    raise SystemExit('Impossible de normaliser const common')
 
-# Remove obsolete validation warnings/targets for the deleted question.
-s = re.sub(
-    r'\n\s*if\(audit\.sections\.tableau\)\{\s*if\(audit\.data\.place\) add\("warning","Tableau électrique : décision manquante".*?\n\s*\}',
-    '', s, count=1, flags=re.S,
-)
-s = re.sub(
-    r'\n\s*if\(t\.includes\(\'tableau électrique : décision\'\)\) return \{selector:\'\[data-field="place"\]\};',
-    '', s, count=1,
-)
-s = re.sub(
-    r'\n\s*if\(t\.includes\(\'tableau électrique : aucune photo\'\)\) return \{selector:\'#tableauFollow\'\};',
-    '', s, count=1,
-)
-s = s.replace(' let place=audit.data.place||"";\n', '')
-
-# Safety checks: never publish if the working tableau photo system disappeared.
-if 'photos("tableau")' not in s:
-    raise SystemExit('SAFETY STOP: tableau photo system disappeared')
-if 'Photo du tableau' not in s:
-    raise SystemExit('SAFETY STOP: tableau photo card disappeared')
-if 'Place disponible dans le tableau ?' in s:
-    raise SystemExit('SAFETY STOP: obsolete place question remains')
-if 'Prévoir un tableau supplémentaire' in s:
-    raise SystemExit('SAFETY STOP: obsolete warning remains')
-if 'PLACE DISPONIBLE DANS LE TABLEAU' in s:
-    raise SystemExit('SAFETY STOP: obsolete PDF block remains')
-
-if s == original:
-    print('NO CHANGES NEEDED')
-else:
-    p.write_text(s, encoding='utf-8')
-    print(f'OK style_open={n1} extra_style={n2} bytes={len(s)}')
+p.write_text(s, encoding='utf-8')
+print(f'OK normalized common fields and repaired styles; bytes={len(s)}')
