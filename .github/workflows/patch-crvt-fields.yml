@@ -26,11 +26,13 @@ jobs:
         run: python source/tools/repair_pwa_and_tableau.py
       - name: Apply safe tableau-only correction
         run: python source/tools/patch_published_tableau.py
+      - name: Apply photo crop tool
+        run: python source/tools/patch_crop.py
       - name: Publish
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'Repair CRVT page and preserve tableau photos'
+          git commit -m 'Add CRVT photo crop tool'
           git push origin gh-pages
