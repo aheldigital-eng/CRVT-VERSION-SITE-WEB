@@ -49,6 +49,39 @@ jobs:
           else:
               print('No broken CRVT style block found.')
 
+      - name: Restore CRVT application bootstrap
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = '<script id="crvt-boot-fix-v1">'
+          if marker not in s:
+              boot = '''<script id="crvt-boot-fix-v1">
+(function(){
+  function bootCRVT(){
+    try{
+      if(typeof migrateStorage === 'function'){
+        Promise.resolve(migrateStorage()).then(function(){
+          if(typeof render === 'function') render();
+          if(typeof updatePdfThemeUI === 'function') updatePdfThemeUI();
+        });
+      }else if(typeof render === 'function'){
+        render();
+      }
+    }catch(e){ console.error('CRVT bootstrap',e); }
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',bootCRVT,{once:true});
+  else bootCRVT();
+})();
+</script>
+'''
+              s = s.replace('</body>', boot + '</body>', 1)
+              p.write_text(s, encoding='utf-8')
+              print('Restored CRVT application bootstrap.')
+          else:
+              print('CRVT bootstrap already present.')
+
       - name: Escape the live repair script closing tag
         shell: python
         run: |
@@ -74,7 +107,7 @@ jobs:
           git config user.email '41898282+users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'Fix CRVT broken style blocks'
+          git commit -m 'Restore CRVT application bootstrap'
           for i in 1 2 3 4 5; do
             git pull --rebase origin gh-pages || true
             if git push origin gh-pages; then exit 0; fi
