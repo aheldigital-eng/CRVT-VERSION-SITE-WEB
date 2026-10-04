@@ -41,7 +41,7 @@ jobs:
           EOF
 
           cat > sw.js <<'EOF'
-          const CACHE = 'crvt-pwa-v6';
+          const CACHE = 'crvt-pwa-v7';
           const BASE = self.registration.scope;
           self.addEventListener('install', event => {
             event.waitUntil(caches.open(CACHE).then(c => c.add(BASE)).then(() => self.skipWaiting()));
@@ -66,16 +66,21 @@ jobs:
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
 
-          # Keep the previously validated CRVT fixes intact.
+          # Repair the malformed style nesting introduced by the previous patch.
           s = s.replace('</style>\n</style>\n<style>\n/* V20 — outils pro terrain */', '</style>\n<style>\n/* V20 — outils pro terrain */', 1)
           s = s.replace('</style>\r\n</style>\r\n<style>\r\n/* V20 — outils pro terrain */', '</style>\r\n<style>\r\n/* V20 — outils pro terrain */', 1)
 
-          # Add the requested Informations fields exactly once.
-          if '"cablecom","Câble de communication"' not in s:
-              needle = '["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"]'
-              addition = ',["distance","Distance (m)","text"],["typeCable","Type de câble","select:3G10|5G10"],["cablecom","Câble de communication","select:Oui|Non"]'
-              if needle in s:
-                  s = s.replace(needle, needle + addition, 1)
+          # Normalize the complete Informations field definition so there is exactly
+          # one clean declaration and no duplicated/broken entries.
+          common = '''const common=[
+["puissance","Puissance souscrite","select:3 kVA|6 kVA|9 kVA|12 kVA|15 kVA|18 kVA|24 kVA|36 kVA|Autre"],["compteur","Type de Compteur","select:Monophasé|Triphasé|Autre"],
+["divisionnaire","Installation d’un tableau divisionnaire","select:Oui|Non"],["typeborne","Type de borne","select:Monophasé|Triphasé|Autre"],
+["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"],
+["distance","Distance (m)","text"],["typeCable","Type de câble","select:3G10|5G10"],["cablecom","Câble de communication","select:Oui|Non"]
+];'''
+          s, n = re.subn(r'const common=\[.*?\];', common, s, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit('Impossible de normaliser const common')
 
           marker = '</body>'
           reg = "<!-- crvt-pwa-registration -->\n<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}</script>\n"
@@ -115,5 +120,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html manifest.json sw.js icon-192.png icon-512.png
           git diff --cached --quiet && exit 0
-          git commit -m 'Add communication cable choice to CRVT'
+          git commit -m 'Fix CRVT information fields and PWA cache'
           git push origin gh-pages
