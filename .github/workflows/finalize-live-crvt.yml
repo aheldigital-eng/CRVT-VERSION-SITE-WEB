@@ -22,6 +22,33 @@ jobs:
           fetch-depth: 1
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Repair broken CRVT style blocks
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          fixes = [
+              (
+                  '@media print{body{padding-top:0 !important;}header{position:static !important;display:none !important;}#quickNav{display:none !important;}}\n\n<style id="crvt-v19-max-design">',
+                  '@media print{body{padding-top:0 !important;}header{position:static !important;display:none !important;}#quickNav{display:none !important;}}\n</style>\n<style id="crvt-v19-max-design">'
+              ),
+              (
+                  '@media print{body{background:#fff}.card{border:0;box-shadow:none}}\n<style id="crvt-v14-quicknav-fixed">',
+                  '@media print{body{background:#fff}.card{border:0;box-shadow:none}}\n</style>\n<style id="crvt-v14-quicknav-fixed">'
+              )
+          ]
+          changed = False
+          for old, new in fixes:
+              if old in s:
+                  s = s.replace(old, new, 1)
+                  changed = True
+          if changed:
+              p.write_text(s, encoding='utf-8')
+              print('Repaired missing CRVT </style> closures.')
+          else:
+              print('No broken CRVT style block found.')
+
       - name: Escape the live repair script closing tag
         shell: python
         run: |
@@ -47,7 +74,7 @@ jobs:
           git config user.email '41898282+users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'Fix CRVT raw JavaScript rendering'
+          git commit -m 'Fix CRVT broken style blocks'
           for i in 1 2 3 4 5; do
             git pull --rebase origin gh-pages || true
             if git push origin gh-pages; then exit 0; fi
