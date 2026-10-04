@@ -1,0 +1,45 @@
+name: Fix CRVT HTML
+
+on:
+  push:
+    branches: [gh-pages]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 1
+      - name: Fix embedded report script closing tag
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old = '</script>\n</body></html>'
+          new = '<\\/script>\n</body></html>'
+          if old in s:
+              s = s.replace(old, new, 1)
+              p.write_text(s, encoding='utf-8')
+              print('CRVT: fixed embedded report script closing tag')
+          else:
+              print('CRVT: no patch needed')
+          PY
+      - name: Commit fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'Fix embedded report script parsing'
+            git push origin gh-pages
+          fi
