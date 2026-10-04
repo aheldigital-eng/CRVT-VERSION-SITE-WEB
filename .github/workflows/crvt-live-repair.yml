@@ -1,0 +1,47 @@
+name: CRVT live repair
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout published gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Repair published CRVT HTML
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+
+          # Fix the malformed nested style boundary introduced by earlier patches.
+          s=s.replace('</style>\n<style id="crvt-v19-max-design">', '</style>\n<style id="crvt-v19-max-design">', 1)
+          s=s.replace('</style>\n</style>\n<style>\n/* V20 — outils pro terrain */', '</style>\n<style>\n/* V20 — outils pro terrain */', 1)
+
+          repair=r'''\n<script id="crvt-live-repair-v1">\n(function(){\n  function cleanRawCode(){\n    try{\n      const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);\n      const nodes=[]; let n;\n      while(n=walker.nextNode()){\n        const t=(n.nodeValue||'');\n        if(/overlay=document\.createElement|V13:\s*barre de rapport|frame\.setAttribute\("sandbox"|crvtReportOverlay/.test(t) && t.length>180){nodes.push(n);}\n      }\n      nodes.forEach(n=>n.remove());\n    }catch(e){}\n  }\n\n  function deleteById(id){\n    return new Promise((resolve,reject)=>{\n      try{\n        const req=indexedDB.open('auditTerrainV26DB',1);\n        req.onsuccess=()=>{\n          const db=req.result;\n          try{\n            const tx=db.transaction('audits','readwrite');\n            tx.objectStore('audits').delete(id);\n            tx.oncomplete=()=>{try{db.close()}catch(e){};resolve(true)};\n            tx.onerror=()=>reject(tx.error);\n          }catch(e){reject(e)}\n        };\n        req.onerror=()=>reject(req.error);\n      }catch(e){reject(e)}\n    });\n  }\n\n  function installDeleteFallback(){\n    document.addEventListener('click',async function(ev){\n      const b=ev.target.closest('button');\n      if(!b || b.textContent.trim()!=='Supprimer') return;\n      const attr=b.getAttribute('onclick')||'';\n      const m=attr.match(/deleteAudit\\((\\d+)\\)/);\n      if(!m) return;\n      ev.preventDefault(); ev.stopImmediatePropagation();\n      if(!confirm('Supprimer définitivement cet audit enregistré ?')) return;\n      try{\n        await deleteById(Number(m[1]));\n        if(typeof history==='function') await history();\n        if(typeof toast==='function') toast('Audit supprimé');\n      }catch(e){if(typeof toast==='function') toast('Impossible de supprimer cet audit.')}\n    },true);\n  }\n\n  function run(){cleanRawCode();installDeleteFallback();setTimeout(cleanRawCode,300);setTimeout(cleanRawCode,1200);}\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();\n})();\n</script>\n'''
+          if 'id="crvt-live-repair-v1"' not in s and '</body>' in s:
+              s=s.replace('</body>',repair+'</body>',1)
+
+          p.write_text(s,encoding='utf-8')
+          PY
+
+      - name: Publish repair
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Repair CRVT live page and audit deletion'
+          git push origin gh-pages
