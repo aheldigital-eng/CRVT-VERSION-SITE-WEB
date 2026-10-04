@@ -22,21 +22,24 @@ jobs:
           fetch-depth: 1
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Escape report template closing script tags
+      - name: Escape the live repair script closing tag
         shell: python
         run: |
           from pathlib import Path
-          import re
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          pattern = r'</script>(?:\n|\\n)</body></html>`'
-          replacement = '<\\/script>\\n</body></html>`'
-          s2, n = re.subn(pattern, replacement, s, count=1)
-          if n:
-              p.write_text(s2, encoding='utf-8')
-              print('Fixed the final report-template closing script tag.')
+          marker = '<script id="crvt-live-repair-v1">'
+          start = s.find(marker)
+          if start >= 0:
+              close = s.find('</script>', start + len(marker))
+              if close >= 0:
+                  s = s[:close] + '<\\/script>' + s[close + len('</script>'):]
+                  p.write_text(s, encoding='utf-8')
+                  print('Escaped crvt-live-repair-v1 closing tag.')
+              else:
+                  print('Closing tag not found after crvt-live-repair-v1.')
           else:
-              print('No matching report-template closing script tag found.')
+              print('crvt-live-repair-v1 marker not found; no change needed.')
 
       - name: Publish final repair
         run: |
@@ -44,7 +47,7 @@ jobs:
           git config user.email '41898282+users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'Finalize CRVT report script parsing'
+          git commit -m 'Fix CRVT raw JavaScript rendering'
           for i in 1 2 3 4 5; do
             git pull --rebase origin gh-pages || true
             if git push origin gh-pages; then exit 0; fi
