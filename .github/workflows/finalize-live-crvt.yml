@@ -26,14 +26,14 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
+          import re
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          needle = '</script>\\n</body></html>`'
+          pattern = r'</script>(?:\n|\\n)</body></html>`'
           replacement = '<\\/script>\\n</body></html>`'
-          idx = s.rfind(needle)
-          if idx >= 0:
-              s = s[:idx] + replacement + s[idx + len(needle):]
-              p.write_text(s, encoding='utf-8')
+          s2, n = re.subn(pattern, replacement, s, count=1)
+          if n:
+              p.write_text(s2, encoding='utf-8')
               print('Fixed the final report-template closing script tag.')
           else:
               print('No matching report-template closing script tag found.')
