@@ -202,12 +202,31 @@ header{position:fixed !important;top:0 !important;left:0 !important;right:0 !imp
 .quickNavInner{overscroll-behavior-x:contain;touch-action:pan-x;overflow-x:auto;overflow-y:hidden;}
 @media print{body{padding-top:0 !important;}header{position:static !important;display:none !important;}#quickNav{display:none !important;}}
 </style>
-</style>
 <style>
 /* V20 — outils pro terrain */
 .v20Tools{border:1px solid #d7e8ef;background:linear-gradient(180deg,#fff,#f6fbfd);box-shadow:0 12px 35px rgba(15,83,112,.10)}
 .v20ToolsGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.v20Tool{border:1px solid #dbe7ee;border-radius:16px;padding:12px;background:#fff}.v20Tool h3{margin:0 0 5px;font-size:15px}.v20Tool p{margin:0 0 9px;color:#64748b;font-size:12px}.v20Status{font-size:12px;font-weight:800;color:#0b6e9e}.v20Template{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.v20Template button{border:1px solid #d5e1e8;border-radius:13px;background:#fff;padding:10px 7px;font-weight:800;color:#203040}.v20Template button.active{outline:3px solid #14a7b8;background:#effcff}.v20SigWrap{display:grid;grid-template-columns:1fr 1fr;gap:10px}.v20Sig{border:1px dashed #9db5c1;border-radius:14px;background:#fbfdff;overflow:hidden}.v20Sig canvas{display:block;width:100%;height:150px;background:#fff;touch-action:none}.v20SigHead{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid #e4edf2}.v20Gps{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.v20GpsBadge{padding:7px 10px;border-radius:999px;background:#e9f7fb;color:#086487;font-weight:800;font-size:12px}.v20ModalBack{position:fixed;inset:0;background:rgba(9,31,44,.58);z-index:2147483600;display:flex;align-items:center;justify-content:center;padding:16px}.v20Modal{width:min(720px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:22px;box-shadow:0 25px 80px rgba(0,0,0,.3);padding:18px}.v20ModalHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.v20ModalHead h2{margin:0}.v20ReportExtra{margin:24px 0;padding:16px;border-radius:14px;background:#f4fafc;border-left:5px solid #0b6e9e}.v20ReportSig{display:grid;grid-template-columns:1fr 1fr;gap:14px}.v20ReportSig img{width:100%;height:150px;object-fit:contain;border:1px solid #d9e5eb;border-radius:10px;background:#fff}.v20Quick{display:flex;gap:7px;flex-wrap:wrap}.v20Quick .btn{font-size:12px;padding:8px 10px}@media(max-width:620px){.v20ToolsGrid,.v20SigWrap,.v20ReportSig{grid-template-columns:1fr}.v20Template{grid-template-columns:1fr 1fr}}
-</style></head>
+</style>
+<style id="crvt-crop-v1">
+.crvt-crop-overlay{pointer-events:none}
+</style>
+
+<style id="crvt-crop-zoom-v1">
+.crvt-crop-zoom-tools{grid-column:1/-1;display:flex;gap:6px;align-items:center;justify-content:center;padding:4px;background:#eef7fa;border:1px solid #dbe5ec;border-radius:10px}
+.crvt-crop-zoom-tools button{border:1px solid #b9d4df;background:#fff;color:#0b6e9e;border-radius:9px;min-width:48px;min-height:38px;font-weight:900;font-size:13px;cursor:pointer;touch-action:manipulation}
+.crvt-crop-zoom-tools button:active{transform:scale(.97)}
+.crvt-crop-zoom-tools .crvt-zoom-value{min-width:64px;text-align:center;font-size:12px;font-weight:900;color:#173247}
+.crvt-annotation-stage.crvt-zoomed{align-items:flex-start;justify-content:flex-start}
+</style>
+
+<style id="crvt-crop-preview-v2">
+.crvtCropPreview{position:fixed;right:12px;top:72px;width:min(190px,44vw);height:190px;background:#fff;border:2px solid #14a7b8;border-radius:12px;box-shadow:0 10px 30px #0006;z-index:1200;display:none;overflow:hidden}
+.crvtCropPreview.open{display:block}
+.crvtCropPreviewTitle{height:28px;background:#075d78;color:#fff;font:800 11px Arial,sans-serif;display:flex;align-items:center;justify-content:center}
+.crvtCropPreview canvas{display:block;width:100%;height:calc(100% - 28px);object-fit:contain;background:#111}
+@media(max-width:620px){.crvtCropPreview{width:170px;height:170px;top:66px;right:8px}}
+</style>
+</head>
 <body>
 <header><h1>CRVT — Compte rendu de visite technique</h1><div class="sub">Audit technique • photos • annotations • légendes • sauvegarde • partage • rapport dynamique</div></header>
 <nav id="quickNav" aria-label="Navigation rapide">
@@ -237,7 +256,8 @@ const ENSIO_LOGO='ensio-logo-transparent.png';
 const common=[
 ["puissance","Puissance souscrite","select:3 kVA|6 kVA|9 kVA|12 kVA|15 kVA|18 kVA|24 kVA|36 kVA|Autre"],["compteur","Type de Compteur","select:Monophasé|Triphasé|Autre"],
 ["divisionnaire","Installation d’un tableau divisionnaire","select:Oui|Non"],["typeborne","Type de borne","select:Monophasé|Triphasé|Autre"],
-["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"]
+["environnement","Environnement Borne","select:Extérieur|Intérieur|Autre"],["position","Positionnement de Borne","select:Sur mur|Sur pied|Autre"],
+["distance","Distance (m)","text"],["typeCable","Type de câble","select:3G10|5G10"],["cablecom","Câble de communication","select:Oui|Non"]
 ];
 const modules={
 tableau:[
@@ -987,6 +1007,12 @@ function annotate(sec,i){
       <button type="button" class="crvt-tool" id="circle">⭕<span>Cercle</span></button>
       <button type="button" class="crvt-tool" id="rect">▭<span>Rectangle</span></button>
       <button type="button" class="crvt-tool" id="text">T<span>Texte</span></button>
+      <div class="crvt-crop-zoom-tools" aria-label="Zoom photo">
+        <button type="button" id="zoomOut" title="Réduire le zoom">🔍−</button>
+        <span class="crvt-zoom-value" id="zoomValue">100 %</span>
+        <button type="button" id="zoomReset" title="Réinitialiser le zoom">100%</button>
+        <button type="button" id="zoomIn" title="Agrandir le zoom">🔍+</button>
+      </div><button type="button" class="crvt-tool" id="crop">✂️<span>Rogner</span></button>
 
       <label class="crvt-control"><span>Trait</span><select id="strokeStyle"><option value="solid">━ Plein</option><option value="dashed">╌ Pointillé</option></select></label>
       <label class="crvt-control"><span>Couleur</span><select id="color"><option value="#e11d48">🔴 Rouge</option><option value="#2563eb">🔵 Bleu</option><option value="#16a34a">🟢 Vert</option><option value="#f59e0b">🟠 Orange</option><option value="#000000">⚫ Noir</option><option value="#ffffff">⚪ Blanc</option></select></label>
@@ -1035,6 +1061,36 @@ function annotate(sec,i){
   const c=m.querySelector("canvas"),ctx=c.getContext("2d"),img=new Image();
   let objects=JSON.parse(JSON.stringify(photo.annotations||[]));
   let tool="select",color="#e11d48",strokeStyle="solid",drawing=null,drawingBefore=null,selected=-1,drag=null;
+  let crvtZoom=1; let cropStart=null,cropRect=null;
+    let cropPreviewBox=null,cropPreviewCanvas=null;
+    function ensureCropPreview(){
+      if(cropPreviewBox) return;
+      cropPreviewBox=document.createElement("div");
+      cropPreviewBox.className="crvtCropPreview";
+      cropPreviewBox.innerHTML='<div class="crvtCropPreviewTitle">APERÇU DU ROGNAGE</div><canvas></canvas>';
+      document.body.appendChild(cropPreviewBox);
+      cropPreviewCanvas=cropPreviewBox.querySelector("canvas");
+    }
+    function updateCropPreview(){
+      if(tool!=="crop"||!cropRect||!img||!img.complete) return;
+      ensureCropPreview();
+      cropPreviewBox.classList.add("open");
+      const x=Math.min(cropRect.x,cropRect.x2),y=Math.min(cropRect.y,cropRect.y2),w=Math.abs(cropRect.x2-cropRect.x),h=Math.abs(cropRect.y2-cropRect.y);
+      if(w<4||h<4) return;
+      const iw=img.naturalWidth||img.width||c.width,ih=img.naturalHeight||img.height||c.height;
+      const sx=iw/c.width,sy=ih/c.height;
+      const sx0=Math.max(0,Math.round(x*sx)),sy0=Math.max(0,Math.round(y*sy));
+      const sw=Math.max(1,Math.min(iw-sx0,Math.round(w*sx))),sh=Math.max(1,Math.min(ih-sy0,Math.round(h*sy)));
+      const maxW=420,maxH=420,scale=Math.min(maxW/sw,maxH/sh);
+      cropPreviewCanvas.width=Math.max(1,Math.round(sw*scale));
+      cropPreviewCanvas.height=Math.max(1,Math.round(sh*scale));
+      const pc=cropPreviewCanvas.getContext("2d");
+      pc.clearRect(0,0,cropPreviewCanvas.width,cropPreviewCanvas.height);
+      pc.drawImage(img,sx0,sy0,sw,sh,0,0,cropPreviewCanvas.width,cropPreviewCanvas.height);
+    }
+    function removeCropPreview(){
+      if(cropPreviewBox){cropPreviewBox.remove();cropPreviewBox=null;cropPreviewCanvas=null;}
+    }
   let undoStack=[],redoStack=[];
 
   function snapshot(){return JSON.parse(JSON.stringify(objects));}
@@ -1049,8 +1105,34 @@ function annotate(sec,i){
     const s=Math.min(maxW/img.naturalWidth,maxH/img.naturalHeight,1);
     c.width=Math.max(1,Math.round(img.naturalWidth*s));
     c.height=Math.max(1,Math.round(img.naturalHeight*s));
+    applyCrvtZoom();
     draw();
   }
+  function applyCrvtZoom(){
+    const stage=m.querySelector(".crvt-annotation-stage");
+    const value=m.querySelector("#zoomValue");
+    if(!c.width||!c.height)return;
+    const z=Math.max(.75,Math.min(3,crvtZoom));
+    crvtZoom=z;
+    c.style.width=Math.round(c.width*z)+"px";
+    c.style.height=Math.round(c.height*z)+"px";
+    if(stage)stage.classList.toggle("crvt-zoomed",z>1.01);
+    if(value)value.textContent=Math.round(z*100)+" %";
+  }
+  function setCrvtZoom(z){
+    crvtZoom=Math.max(.75,Math.min(3,z));
+    applyCrvtZoom();
+    draw();
+  }
+  m.addEventListener("click",e=>{
+    const b=e.target.closest("#zoomIn,#zoomOut,#zoomReset");
+    if(!b)return;
+    e.preventDefault();e.stopPropagation();
+    if(b.id==="zoomIn")setCrvtZoom(crvtZoom+.25);
+    else if(b.id==="zoomOut")setCrvtZoom(crvtZoom-.25);
+    else setCrvtZoom(1);
+  });
+
   img.onload=()=>{fitCanvas();setTimeout(fitCanvas,80)};
   img.src=src;
 
@@ -1075,6 +1157,15 @@ function annotate(sec,i){
   function draw(){
     if(!c.width||!c.height)return;
     ctx.clearRect(0,0,c.width,c.height);ctx.drawImage(img,0,0,c.width,c.height);
+    if(cropRect){
+      const x=Math.min(cropRect.x,cropRect.x2),y=Math.min(cropRect.y,cropRect.y2),w=Math.abs(cropRect.x2-cropRect.x),h=Math.abs(cropRect.y2-cropRect.y);
+      ctx.save();
+      ctx.fillStyle="rgba(0,0,0,.38)";ctx.fillRect(0,0,c.width,c.height);
+      ctx.clearRect(x,y,w,h);ctx.drawImage(img,0,0,c.width,c.height,x,y,w,h);
+      ctx.strokeStyle="#14a7b8";ctx.lineWidth=3;ctx.setLineDash([10,7]);ctx.strokeRect(x,y,w,h);ctx.setLineDash([]);
+      ctx.fillStyle="#14a7b8";ctx.font="bold 14px Arial";ctx.fillText("Zone conservée",Math.max(6,x+6),Math.max(18,y+18));
+      ctx.restore();
+    }
     objects.forEach((o,idx)=>{
       const b=bounds(o);ctx.save();ctx.translate(b.cx,b.cy);ctx.rotate(o.rot||0);ctx.translate(-b.cx,-b.cy);
       ctx.strokeStyle=o.color||"#e11d48";ctx.fillStyle=o.color||"#e11d48";ctx.lineWidth=o.width||5;ctx.lineCap="round";ctx.lineJoin="round";ctx.setLineDash(o.dashed?[16,10]:[]);
@@ -1087,8 +1178,8 @@ function annotate(sec,i){
       if(idx===selected){ctx.save();ctx.strokeStyle="#0b6e9e";ctx.setLineDash([7,5]);ctx.lineWidth=2;ctx.strokeRect(b.minx-12,b.miny-12,b.maxx-b.minx+24,b.maxy-b.miny+24);ctx.restore()}
     });
   }
-  function setTool(t){tool=t;drawing=null;drag=null;selected=-1;m.querySelectorAll(".crvt-tool").forEach(b=>b.classList.remove("active"));const b=m.querySelector("#"+t);if(b)b.classList.add("active");draw()}
-  ["select","pen","arrow","line","circle","rect","text"].forEach(id=>m.querySelector("#"+id).addEventListener("click",e=>{e.preventDefault();e.stopPropagation();setTool(id)}));
+  function setTool(t){tool=t;drawing=null;drag=null;selected=-1;cropStart=null;cropRect=null;if(t!=="crop")removeCropPreview();else ensureCropPreview();m.querySelectorAll(".crvt-tool").forEach(b=>b.classList.remove("active"));const b=m.querySelector("#"+t);if(b)b.classList.add("active");draw()}
+  ["select","pen","arrow","line","circle","rect","text","crop"].forEach(id=>m.querySelector("#"+id).addEventListener("click",e=>{e.preventDefault();e.stopPropagation();setTool(id)}));
   m.querySelector("#strokeStyle").addEventListener("change",e=>{strokeStyle=e.target.value;if(selected>=0){const before=snapshot();objects[selected].dashed=strokeStyle==="dashed";commit(before);draw()}});
   m.querySelector("#color").addEventListener("change",e=>{color=e.target.value;if(selected>=0){const before=snapshot();objects[selected].color=color;commit(before);draw()}});
   function rotate(delta){if(selected>=0){const before=snapshot();objects[selected].rot=(objects[selected].rot||0)+delta*Math.PI/180;commit(before);draw()}else toast("Sélectionne d’abord une annotation")}
@@ -1100,6 +1191,7 @@ function annotate(sec,i){
 
   c.onpointerdown=e=>{
     e.preventDefault();c.setPointerCapture?.(e.pointerId);const p=pt(e);
+    if(tool==="crop"){ensureCropPreview();cropPreviewBox.classList.add("open");cropStart={x:p.x,y:p.y};cropRect={x:p.x,y:p.y,x2:p.x,y2:p.y};draw();updateCropPreview();return;}
     if(tool==="select"){
       selected=-1;for(let k=objects.length-1;k>=0;k--)if(hit(objects[k],p)){selected=k;break}
       if(selected>=0){drag={start:p,base:JSON.parse(JSON.stringify(objects[selected])),before:snapshot()};strokeStyle=objects[selected].dashed?"dashed":"solid";m.querySelector("#strokeStyle").value=strokeStyle;m.querySelector("#color").value=objects[selected].color||color}
@@ -1112,8 +1204,28 @@ function annotate(sec,i){
     }
     drawingBefore=snapshot();drawing={x:p.x,y:p.y,x2:p.x,y2:p.y,color,width:5,type:tool,rot:0,dashed:strokeStyle==="dashed",points:tool==="pen"?[{x:p.x,y:p.y}]:undefined};objects.push(drawing);selected=objects.length-1;draw();
   };
-  c.onpointermove=e=>{e.preventDefault();const p=pt(e);if(tool==="select"&&drag&&selected>=0){const dx=p.x-drag.start.x,dy=p.y-drag.start.y,o=objects[selected],b=drag.base;if(o.type==="pen")o.points=b.points.map(q=>({x:q.x+dx,y:q.y+dy}));else{o.x=b.x+dx;o.y=b.y+dy;if(b.x2!==undefined){o.x2=b.x2+dx;o.y2=b.y2+dy}}draw();return}if(!drawing)return;if(tool==="pen")drawing.points.push(p);else{drawing.x2=p.x;drawing.y2=p.y}draw()};
-  c.onpointerup=e=>{e.preventDefault();if(drawing&&drawingBefore){commit(drawingBefore)}if(drag&&selected>=0){const before=drag.before,now=JSON.stringify(objects[selected]),base=JSON.stringify(drag.base);if(now!==base)commit(before)}drawing=null;drawingBefore=null;drag=null;draw()};
+  c.onpointermove=e=>{e.preventDefault();const p=pt(e);
+    if(tool==="crop"&&cropStart){cropRect={x:cropStart.x,y:cropStart.y,x2:p.x,y2:p.y};draw();updateCropPreview();return;}
+    if(tool==="select"&&drag&&selected>=0){const dx=p.x-drag.start.x,dy=p.y-drag.start.y,o=objects[selected],b=drag.base;if(o.type==="pen")o.points=b.points.map(q=>({x:q.x+dx,y:q.y+dy}));else{o.x=b.x+dx;o.y=b.y+dy;if(b.x2!==undefined){o.x2=b.x2+dx;o.y2=b.y2+dy}}draw();return}if(!drawing)return;if(tool==="pen")drawing.points.push(p);else{drawing.x2=p.x;drawing.y2=p.y}draw()};
+  c.onpointerup=e=>{
+    e.preventDefault();
+    if(tool==="crop"&&cropRect){
+      const x=Math.min(cropRect.x,cropRect.x2),y=Math.min(cropRect.y,cropRect.y2),w=Math.abs(cropRect.x2-cropRect.x),h=Math.abs(cropRect.y2-cropRect.y);
+      if(w<30||h<30){cropRect=null;cropStart=null;draw();removeCropPreview();toast("Zone de rognage trop petite");return;}
+      const iw=img.naturalWidth||img.width||c.width,ih=img.naturalHeight||img.height||c.height;
+      const sx=iw/c.width,sy=ih/c.height;
+      const sx0=Math.max(0,Math.round(x*sx)),sy0=Math.max(0,Math.round(y*sy));
+      const sw=Math.min(iw-sx0,Math.round(w*sx)),sh=Math.min(ih-sy0,Math.round(h*sy));
+      if(sw<30||sh<30){cropRect=null;cropStart=null;draw();toast("Zone de rognage trop petite");return;}
+      if((objects||[]).length&&!confirm("Cette photo contient des annotations. Le rognage va les retirer pour éviter qu’elles soient décalées. Continuer ?")){cropRect=null;cropStart=null;draw();return;}
+      const out=document.createElement("canvas");out.width=sw;out.height=sh;out.getContext("2d").drawImage(img,sx0,sy0,sw,sh,0,0,sw,sh);
+      const data=out.toDataURL("image/jpeg",.92);
+      photo.baseData=data;photo.data=data;photo.annotations=[];photo.rotation=0;
+      if(audit.status==="Terminé")audit.status="Brouillon";
+      cropRect=null;cropStart=null;
+      removeCropPreview();close(false);save();render();toast("Photo rognée");return;
+    }
+    if(drawing&&drawingBefore){commit(drawingBefore)}if(drag&&selected>=0){const before=drag.before,now=JSON.stringify(objects[selected]),base=JSON.stringify(drag.base);if(now!==base)commit(before)}drawing=null;drawingBefore=null;drag=null;draw()};
   c.onpointercancel=()=>{if(drawing&&drawingBefore){objects.pop();}drawing=null;drawingBefore=null;drag=null;draw()};
 
   function rasterizeAnnotatedPhoto(){
@@ -1551,7 +1663,6 @@ header{position:fixed !important;top:0 !important;left:0 !important;right:0 !imp
 .quickNavInner{overscroll-behavior-x:contain;touch-action:pan-x;overflow-x:auto;overflow-y:hidden;}
 @media print{body{padding-top:0 !important;}header{position:static !important;display:none !important;}#quickNav{display:none !important;}}
 </style>
-</style>
 </head><body class="theme-${pdfThemeKey}">${pages.join("")}<button id="printBtn" disabled>🖨️ Imprimer / Enregistrer en PDF</button><div id="ready" style="position:fixed;left:18px;bottom:18px;padding:8px 12px;border-radius:7px;background:#fff;border:1px solid #cbd5dc;font-size:12px;font-weight:700;color:#53616c;z-index:98">Préparation du rapport…</div><script>(function(){const btn=document.getElementById("printBtn"),ready=document.getElementById("ready"); const imgs=[...document.images]; const wait=imgs.map(img=>img.complete?Promise.resolve():new Promise(r=>{img.addEventListener("load",r,{once:true});img.addEventListener("error",r,{once:true})})); Promise.all(wait).then(()=>{requestAnimationFrame(()=>{requestAnimationFrame(()=>{btn.disabled=false;btn.textContent="🖨️ Imprimer / Enregistrer en PDF";ready.textContent="Rapport prêt à être imprimé";btn.onclick=()=>window.print();});});});})();<\/script>
 <button id="crvtBackTop" class="crvt-back-top noPrint" type="button" aria-label="Remonter en haut" title="Remonter en haut">↑ <span>Haut</span></button>
 <style>
@@ -1585,7 +1696,39 @@ header{position:fixed !important;top:0 !important;left:0 !important;right:0 !imp
   update();
 })();
 <\/script>
-</body></html>`;
+<!-- crvt-pwa-registration -->
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}<\/script>
+<!-- CRVT CROP ZOOM V1 -->
+<script src="./delete-fix.js?v=4"></script><script>
+(function(){
+  function getAudit(){return typeof audit!=='undefined' ? audit : null;}
+  function escR(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+  function reportHTML(){
+    const a=getAudit(), d=(a&&a.data)||{};
+    const rows=[
+      ['Client',a&&a.client],['Auditeur',a&&a.auditeur],['Date',a&&typeof fr==='function'?fr(a.date):''],
+      ['Type de visite',a&&a.typeVisite],['Puissance souscrite',d.puissance],['Type de compteur',d.compteur],
+      ['Tableau divisionnaire',d.divisionnaire],['Type de borne',d.typeborne],['Environnement',d.environnement],['Positionnement',d.position],
+      ['Longueur cheminement',d.longueur?d.longueur+' m':''],['Hauteur / profondeur',d.hauteur?d.hauteur+' m':''],
+      ['Type de câble',d.typeCable],['Câble de communication',d.cableCommunication]
+    ];
+    const photos=[];
+    if(a&&a.photos) Object.entries(a.photos).forEach(([sec,arr])=>(arr||[]).forEach(p=>{if(p&&p.data)photos.push({sec,data:p.data,note:p.note||''})}));
+    return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CRVT - Compte rendu de visite technique</title><style>body{font-family:Arial,sans-serif;margin:0;color:#172433;background:#fff}main{max-width:900px;margin:auto;padding:28px}h1{color:#075777;margin:0 0 4px;font-size:25px}h2{color:#075777;border-bottom:2px solid #d8e7ed;padding-bottom:7px;margin-top:25px}.meta{color:#64748b;margin-bottom:20px}.grid{display:grid;grid-template-columns:1fr 1fr;border:1px solid #d9e3e8}.cell{padding:9px;border-bottom:1px solid #e6edf0}.cell:nth-child(odd){font-weight:700;background:#f7fafb}.photos{display:grid;grid-template-columns:1fr 1fr;gap:12px}.photo{border:1px solid #d9e3e8;padding:8px;border-radius:8px}.photo img{width:100%;max-height:330px;object-fit:contain}.note{font-size:12px;color:#64748b}@media(max-width:650px){main{padding:16px}.grid,.photos{grid-template-columns:1fr}}</style></head><body><main><h1>CRVT</h1><div class="meta">Compte rendu de visite technique</div><h2>Informations techniques</h2><div class="grid">${rows.filter(r=>r[1]!==undefined&&r[1]!=='').map(r=>`<div class="cell">${escR(r[0])}</div><div class="cell">${escR(r[1])}</div>`).join('')}</div>${a&&a.commentaire?`<h2>Commentaire</h2><p>${escR(a.commentaire).replace(/\n/g,'<br>')}</p>`:''}${d.observations?`<h2>Observations</h2><p>${escR(d.observations).replace(/\n/g,'<br>')}</p>`:''}${photos.length?`<h2>Photos</h2><div class="photos">${photos.map(p=>`<div class="photo"><img src="${p.data}"><div class="note">${escR(p.sec)}${p.note?' — '+escR(p.note):''}</div></div>`).join('')}</div>`:''}<h2>Validation</h2><p>Compte rendu généré depuis CRVT.</p></main></body></html>`;
+  }
+  function showReport(){
+    const old=document.getElementById('crvtReportFix'); if(old)old.remove();
+    const overlay=document.createElement('div'); overlay.id='crvtReportFix'; overlay.className='reportOverlay';
+    overlay.innerHTML='<div class="reportBar"><b style="margin-right:auto">Aperçu du compte rendu</b><button type="button" id="crvtPrint">🖨️ PDF / Imprimer</button><button type="button" id="crvtClose">✕ Fermer</button></div><iframe class="reportFrame" title="Aperçu PDF"></iframe>';
+    document.body.appendChild(overlay);
+    const frame=overlay.querySelector('iframe'); const html=reportHTML(); frame.srcdoc=html;
+    overlay.querySelector('#crvtClose').onclick=()=>overlay.remove();
+    overlay.querySelector('#crvtPrint').onclick=()=>{try{frame.contentWindow.focus();frame.contentWindow.print();}catch(e){const w=window.open();if(w){w.document.write(html);w.document.close();w.focus();w.print();}}};
+  }
+  const install=()=>{const b=document.getElementById('reportBtn');if(b)b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();showReport();},true);};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+})();
+</script></body></html>`;
 // Affichage dans la même page : aucun onglet about:srcdoc et retour CRVT toujours possible.
 const oldOverlay=document.getElementById("crvtReportOverlay");
 if(oldOverlay) oldOverlay.remove();
@@ -1900,7 +2043,5 @@ migrateStorage().then(()=>{history();});
   window.addEventListener('scroll',update,{passive:true});
   update();
 })();
-</script>
-
-<script src="delete-fix.js?v=crvt-delete-6"></script>
-</body></html>
+<\/script>
+<script src="./delete-fix.js?v=4"></script></body></html>
