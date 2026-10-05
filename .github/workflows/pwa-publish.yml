@@ -17,7 +17,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build the pre-logo CRVT and repair HTML
+      - name: Restore exact known-good pre-logo CRVT
         shell: bash
         run: |
           set -e
@@ -26,51 +26,28 @@ jobs:
           git show f764b4afbdaafc0aeeb9ae818e701d5bcc114b9c:delete-fix.js > /tmp/crvt-deploy/delete-fix.js
           test -s /tmp/crvt-deploy/index.html
           test -s /tmp/crvt-deploy/delete-fix.js
-          grep -q '<!doctype html>' /tmp/crvt-deploy/index.html
+          grep -q '^<!doctype html>' /tmp/crvt-deploy/index.html
+          grep -q '</html>' /tmp/crvt-deploy/index.html
           grep -q 'function deleteAudit' /tmp/crvt-deploy/index.html
 
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('/tmp/crvt-deploy/index.html')
-          src = p.read_text(encoding='utf-8')
-
-          # A previous patch accidentally omitted the closing </style> for V12.
-          # That caused Chrome to treat the following application markup/scripts as
-          # page text. Restore the missing tag without changing application logic.
-          bad = '</style>\n\n<style id="crvt-v19-max-design">'
-          # The malformed source has the V12 style block immediately followed by V19.
-          # If the exact transition is already correct, leave it alone.
-          if bad not in src:
-              bad2 = '@media print{body{padding-top:0 !important;}header{position:static !important;display:none !important;}#quickNav{display:none !important;}}\n\n<style id="crvt-v19-max-design">'
-              good2 = '@media print{body{padding-top:0 !important;}header{position:static !important;display:none !important;}#quickNav{display:none !important;}}\n</style>\n\n<style id="crvt-v19-max-design">'
-              if bad2 in src:
-                  src = src.replace(bad2, good2, 1)
-              else:
-                  raise SystemExit('CRVT V12/V19 style boundary not found')
-
-          p.write_text(src, encoding='utf-8')
-          PY
-
-          grep -q '</style>[[:space:]]*<style id="crvt-v19-max-design"' /tmp/crvt-deploy/index.html || true
-          grep -q 'crvt-v19-max-design' /tmp/crvt-deploy/index.html
-
       - name: Prepare PWA files
+        shell: bash
         run: |
           set -e
           git fetch origin gh-pages --depth=1 || true
           git show origin/gh-pages:crvt-icon-192.png > /tmp/crvt-deploy/crvt-icon-192.png 2>/dev/null || true
           git show origin/gh-pages:crvt-icon-512.png > /tmp/crvt-deploy/crvt-icon-512.png 2>/dev/null || true
           cat > /tmp/crvt-deploy/manifest.json <<'EOF'
-          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=crvt-fixed-2","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT.","icons":[{"src":"crvt-icon-192.png?v=crvt-fixed-2","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"crvt-icon-512.png?v=crvt-fixed-2","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
+          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=prelogo-stable-1","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT.","icons":[{"src":"crvt-icon-192.png?v=prelogo-stable-1","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"crvt-icon-512.png?v=prelogo-stable-1","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
           EOF
-          rm -f /tmp/crvt-deploy/sw.js
 
-      - name: Publish to gh-pages
+      - name: Publish exact known-good build to gh-pages
+        shell: bash
         run: |
           set -e
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git fetch origin gh-pages:gh-pages || true
+          git fetch origin gh-pages:gh-pages
           git checkout gh-pages
           cp /tmp/crvt-deploy/index.html index.html
           cp /tmp/crvt-deploy/delete-fix.js delete-fix.js
@@ -80,5 +57,5 @@ jobs:
           test ! -f /tmp/crvt-deploy/crvt-icon-512.png || cp /tmp/crvt-deploy/crvt-icon-512.png crvt-icon-512.png
           git add -A
           git diff --cached --quiet && exit 0
-          git commit -m 'Fix CRVT page rendering and audit deletion'
+          git commit -m 'Restore exact known-good CRVT pre-logo build'
           git push origin gh-pages
