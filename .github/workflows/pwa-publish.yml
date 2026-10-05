@@ -22,10 +22,6 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/crvt-deploy
-
-          # This is the last known-good CRVT source before the logo/PWA
-          # wrapper experiments. It already contains the current audit fields,
-          # annotation editor and report fixes.
           git show f6337cfe0aa05e4bcf37194ae6bb67314246782f:index-19.html > /tmp/crvt-deploy/index.html
           cp delete-fix.js /tmp/crvt-deploy/delete-fix.js
 
@@ -35,41 +31,27 @@ jobs:
           grep -q '</html>' /tmp/crvt-deploy/index.html
           grep -q 'function deleteAudit' /tmp/crvt-deploy/index.html
 
-          # Prevent Chrome from terminating the outer script when a report
-          # template contains an HTML </script>. Escape closing script tags
-          # only while inside JavaScript template literals.
+          # CRITICAL: reportHtml is a JavaScript template literal. A literal
+          # </script> inside it terminates the outer script in Chrome and
+          # exposes the following JavaScript as visible text.
           python3 - <<'PY'
           from pathlib import Path
           p = Path('/tmp/crvt-deploy/index.html')
           src = p.read_text(encoding='utf-8')
-          out=[]
-          i=0
-          in_tpl=False
-          escaped=False
-          while i < len(src):
-              ch=src[i]
-              if in_tpl:
-                  if escaped:
-                      out.append(ch); escaped=False; i+=1; continue
-                  if ch=='\\':
-                      out.append(ch); escaped=True; i+=1; continue
-                  if ch=='`':
-                      out.append(ch); in_tpl=False; i+=1; continue
-                  if src.startswith('</script>', i) or src.startswith('</SCRIPT>', i):
-                      out.append('<\\/script>'); i += 9; continue
-                  out.append(ch); i+=1; continue
-              else:
-                  if ch=='`':
-                      out.append(ch); in_tpl=True; i+=1; continue
-                  out.append(ch); i+=1
-          if in_tpl:
-              raise SystemExit('Unclosed template literal in stable CRVT source')
-          fixed=''.join(out)
-          p.write_text(fixed, encoding='utf-8')
+          start = src.find('const reportHtml=`')
+          if start < 0:
+              raise SystemExit('reportHtml template not found')
+          end = src.find('`;\n// Affichage dans la même page', start)
+          if end < 0:
+              raise SystemExit('reportHtml template end not found')
+          head = src[:start]
+          body = src[start:end]
+          tail = src[end:]
+          body = body.replace('</script>', '<\\/script>').replace('</SCRIPT>', '<\\/script>')
+          p.write_text(head + body + tail, encoding='utf-8')
           PY
 
-          # Inject the independent deletion repair last so it cannot be broken
-          # by the report-template code.
+          # Independent deletion repair, added after the report-template fix.
           python3 - <<'PY'
           from pathlib import Path
           p = Path('/tmp/crvt-deploy/index.html')
@@ -78,13 +60,12 @@ jobs:
           pos=src.lower().rfind(marker)
           if pos < 0:
               raise SystemExit('Closing body tag not found')
-          inject='\n<script src="delete-fix.js?v=crvt-delete-5"></script>\n'
-          if 'delete-fix.js?v=crvt-delete-5' not in src:
+          inject='\n<script src="delete-fix.js?v=crvt-delete-6"></script>\n'
+          if 'delete-fix.js?v=crvt-delete-6' not in src:
               src=src[:pos]+inject+src[pos:]
           p.write_text(src, encoding='utf-8')
           PY
-
-          grep -q 'delete-fix.js?v=crvt-delete-5' /tmp/crvt-deploy/index.html
+          grep -q 'delete-fix.js?v=crvt-delete-6' /tmp/crvt-deploy/index.html
 
       - name: Prepare PWA files
         shell: bash
@@ -94,7 +75,7 @@ jobs:
           git show origin/gh-pages:crvt-icon-192.png > /tmp/crvt-deploy/crvt-icon-192.png 2>/dev/null || true
           git show origin/gh-pages:crvt-icon-512.png > /tmp/crvt-deploy/crvt-icon-512.png 2>/dev/null || true
           cat > /tmp/crvt-deploy/manifest.json <<'EOF'
-          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=crvt-stable-6","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT.","icons":[{"src":"crvt-icon-192.png?v=crvt-stable-6","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"crvt-icon-512.png?v=crvt-stable-6","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
+          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=crvt-stable-7","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT.","icons":[{"src":"crvt-icon-192.png?v=crvt-stable-7","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"crvt-icon-512.png?v=crvt-stable-7","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
           EOF
 
       - name: Publish stable CRVT to gh-pages
@@ -113,5 +94,5 @@ jobs:
           test ! -f /tmp/crvt-deploy/crvt-icon-512.png || cp /tmp/crvt-deploy/crvt-icon-512.png crvt-icon-512.png
           git add -A
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Restore stable CRVT and repair audit deletion'
+          git commit -m 'Restore stable CRVT: fix script parsing and audit deletion'
           git push origin gh-pages
