@@ -82,7 +82,7 @@ jobs:
           test ! -f /tmp/crvt-deploy/crvt-icon-192.png || cp /tmp/crvt-deploy/crvt-icon-192.png crvt-icon-192.png
           test ! -f /tmp/crvt-deploy/crvt-icon-512.png || cp /tmp/crvt-deploy/crvt-icon-512.png crvt-icon-512.png
           rm -f crvt-logo.svg
-          git add index.html manifest.json sw.js crvt-icon-192.png crvt-icon-512.png crvt-logo.svg
+          git add index.html manifest.json sw.js crvt-icon-192.png crvt-icon-512.png
           git diff --cached --quiet && exit 0
           git commit -m 'Restore CRVT stable version before logo'
           git push origin gh-pages
