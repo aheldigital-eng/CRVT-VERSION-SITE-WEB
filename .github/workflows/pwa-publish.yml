@@ -17,13 +17,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build stable CRVT from current deployed build
+      - name: Build CRVT from current deployed feature build
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/crvt-deploy
-          # Keep the latest deployed CRVT features (PDF information, crop UI,
-          # annotations, history, etc.) and repair only the broken script boundary.
           git show d9c3d05ac2fa13c89b2a69d3e214b3c444b9f419:index.html > /tmp/crvt-deploy/index.html
           cp delete-fix.js /tmp/crvt-deploy/delete-fix.js
 
@@ -33,41 +31,49 @@ jobs:
           grep -q '</html>' /tmp/crvt-deploy/index.html
           grep -q 'function deleteAudit' /tmp/crvt-deploy/index.html
 
-          # CRITICAL Chrome fix: reportHtml is a JavaScript template literal.
-          # A literal </script> inside it closes the outer script and exposes
-          # the following CRVT JavaScript as visible text.
+          # Repair the exact defect visible on the user's phone: the report
+          # overlay JavaScript was left after </body></html>, so Chrome renders
+          # it as text. Put that tail back inside a real script element.
           python3 - <<'PY'
           from pathlib import Path
-          p = Path('/tmp/crvt-deploy/index.html')
-          src = p.read_text(encoding='utf-8')
-          start = src.find('const reportHtml=`')
-          if start < 0:
-              raise SystemExit('reportHtml template not found')
-          end = src.find('`;\n// Affichage dans la même page', start)
-          if end < 0:
-              raise SystemExit('reportHtml template end not found')
-          head = src[:start]
-          body = src[start:end]
-          tail = src[end:]
-          body = body.replace('</script>', '<\\/script>').replace('</SCRIPT>', '<\\/script>')
-          p.write_text(head + body + tail, encoding='utf-8')
+          p=Path('/tmp/crvt-deploy/index.html')
+          s=p.read_text(encoding='utf-8')
+          end_html=s.lower().find('</body></html>')
+          if end_html>=0:
+              end=end_html+len('</body></html>')
+              tail=s[end:]
+              marker='const oldOverlay=document.getElementById("crvtReportOverlay")'
+              if marker in tail:
+                  tail_js=tail[tail.find(marker):].strip()
+                  s=s[:end_html]+'\n<script>\n'+tail_js+'\n</script></body></html>'
+
+          # Also protect literal closing script tags inside reportHtml.
+          marker='const reportHtml=`'
+          start=s.find(marker)
+          if start>=0:
+              start+=len(marker)
+              end=s.find('`;\n// Affichage dans la même page',start)
+              if end<0: end=s.find('`;\n',start)
+              if end>=0:
+                  body=s[start:end]
+                  body=body.replace('</script>','<\\/script>').replace('</SCRIPT>','<\\/script>')
+                  s=s[:start]+body+s[end:]
+          p.write_text(s,encoding='utf-8')
           PY
 
-          # Independent audit deletion repair.
+          # Load the robust audit deletion repair after the main CRVT script.
           python3 - <<'PY'
           from pathlib import Path
-          p = Path('/tmp/crvt-deploy/index.html')
-          src = p.read_text(encoding='utf-8')
-          marker='</body>'
-          pos=src.lower().rfind(marker)
-          if pos < 0:
-              raise SystemExit('Closing body tag not found')
-          inject='\n<script src="delete-fix.js?v=crvt-delete-7"></script>\n'
-          if 'delete-fix.js?v=crvt-delete-7' not in src:
-              src=src[:pos]+inject+src[pos:]
-          p.write_text(src, encoding='utf-8')
+          p=Path('/tmp/crvt-deploy/index.html')
+          s=p.read_text(encoding='utf-8')
+          tag='<script src="delete-fix.js?v=crvt-delete-10"></script>'
+          if 'delete-fix.js?v=crvt-delete-10' not in s:
+              pos=s.lower().rfind('</body>')
+              if pos<0: raise SystemExit('Closing body tag not found')
+              s=s[:pos]+'\n'+tag+'\n'+s[pos:]
+          p.write_text(s,encoding='utf-8')
           PY
-          grep -q 'delete-fix.js?v=crvt-delete-7' /tmp/crvt-deploy/index.html
+          grep -q 'delete-fix.js?v=crvt-delete-10' /tmp/crvt-deploy/index.html
 
       - name: Prepare PWA files
         shell: bash
@@ -77,7 +83,7 @@ jobs:
           git show origin/gh-pages:crvt-icon-192.png > /tmp/crvt-deploy/crvt-icon-192.png 2>/dev/null || true
           git show origin/gh-pages:crvt-icon-512.png > /tmp/crvt-deploy/crvt-icon-512.png 2>/dev/null || true
           cat > /tmp/crvt-deploy/manifest.json <<'EOF'
-          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=crvt-stable-8","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT.","icons":[{"src":"crvt-icon-192.png?v=crvt-stable-8","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"crvt-icon-512.png?v=crvt-stable-8","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
+          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=crvt-stable-10","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT.","icons":[{"src":"crvt-icon-192.png?v=crvt-stable-10","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"crvt-icon-512.png?v=crvt-stable-10","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
           EOF
 
       - name: Publish stable CRVT to gh-pages
@@ -96,5 +102,5 @@ jobs:
           test ! -f /tmp/crvt-deploy/crvt-icon-512.png || cp /tmp/crvt-deploy/crvt-icon-512.png crvt-icon-512.png
           git add -A
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Fix CRVT script parsing while preserving current features'
+          git commit -m 'Fix CRVT visible code while preserving features'
           git push origin gh-pages
