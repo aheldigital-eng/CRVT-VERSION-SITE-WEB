@@ -23,7 +23,7 @@ jobs:
           set -e
           mkdir -p /tmp/crvt-deploy
           git show f764b4afbdaafc0aeeb9ae818e701d5bcc114b9c:index.html > /tmp/crvt-deploy/index.html
-          git show f764b4afbdaafc0aeeb9ae818e701d5bcc114b9c:delete-fix.js > /tmp/crvt-deploy/delete-fix.js
+          cp delete-fix.js /tmp/crvt-deploy/delete-fix.js
           test -s /tmp/crvt-deploy/index.html
           test -s /tmp/crvt-deploy/delete-fix.js
           grep -q '^<!doctype html>' /tmp/crvt-deploy/index.html
@@ -52,6 +52,20 @@ jobs:
           p.write_text(fixed, encoding='utf-8')
           PY
 
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('/tmp/crvt-deploy/index.html')
+          src = p.read_text(encoding='utf-8')
+          marker = '</body>'
+          pos = src.lower().rfind(marker)
+          if pos < 0:
+              raise SystemExit('body closing marker not found')
+          inject = '\n<script src="delete-fix.js?v=delete-fix-2"></script>\n'
+          src = src[:pos] + inject + src[pos:]
+          p.write_text(src, encoding='utf-8')
+          PY
+
+          grep -q 'delete-fix.js?v=delete-fix-2' /tmp/crvt-deploy/index.html
           grep -q '^<!doctype html>' /tmp/crvt-deploy/index.html
           grep -q '</html>' /tmp/crvt-deploy/index.html
 
@@ -63,7 +77,7 @@ jobs:
           git show origin/gh-pages:crvt-icon-192.png > /tmp/crvt-deploy/crvt-icon-192.png 2>/dev/null || true
           git show origin/gh-pages:crvt-icon-512.png > /tmp/crvt-deploy/crvt-icon-512.png 2>/dev/null || true
           cat > /tmp/crvt-deploy/manifest.json <<'EOF'
-          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=crvt-fixed-4","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT.","icons":[{"src":"crvt-icon-192.png?v=crvt-fixed-4","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"crvt-icon-512.png?v=crvt-fixed-4","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
+          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=crvt-fixed-5","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT.","icons":[{"src":"crvt-icon-192.png?v=crvt-fixed-5","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"crvt-icon-512.png?v=crvt-fixed-5","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
           EOF
 
       - name: Publish exact known-good build to gh-pages
@@ -82,5 +96,5 @@ jobs:
           test ! -f /tmp/crvt-deploy/crvt-icon-512.png || cp /tmp/crvt-deploy/crvt-icon-512.png crvt-icon-512.png
           git add -A
           git diff --cached --quiet && exit 0
-          git commit -m 'Fix CRVT report template script tag'
+          git commit -m 'Fix CRVT audit deletion'
           git push origin gh-pages
