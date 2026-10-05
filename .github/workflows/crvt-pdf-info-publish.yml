@@ -19,10 +19,10 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Build PDF information fix from stable pre-logo version
+      - name: Build PDF information fix and repair script structure
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
           rm -rf /tmp/crvt-pdf
           mkdir -p /tmp/crvt-pdf
           git show f764b4afbdaafc0aeeb9ae818e701d5bcc114b9c:index.html > /tmp/crvt-pdf/index.html
@@ -30,6 +30,36 @@ jobs:
           cp tools/patch_report.py /tmp/crvt-pdf/patch_report.py
           cd /tmp/crvt-pdf
           python3 patch_report.py
+
+          # The deployed build had report-overlay JavaScript after </body></html>.
+          # Move that tail back inside a real script element so Chrome cannot
+          # render the JavaScript source as page text.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          end_html=s.lower().find('</body></html>')
+          if end_html>=0:
+              end=end_html+len('</body></html>')
+              tail=s[end:]
+              marker='const oldOverlay=document.getElementById("crvtReportOverlay")'
+              if marker in tail:
+                  tail_js=tail[tail.find(marker):].strip()
+                  s=s[:end_html]+'\n<script>\n'+tail_js+'\n</script></body></html>'
+
+          marker='const reportHtml=`'
+          start=s.find(marker)
+          if start>=0:
+              start+=len(marker)
+              end=s.find('`;\n// Affichage dans la même page',start)
+              if end<0: end=s.find('`;\n',start)
+              if end>=0:
+                  body=s[start:end]
+                  body=body.replace('</script>','<\\/script>').replace('</SCRIPT>','<\\/script>')
+                  s=s[:start]+body+s[end:]
+          p.write_text(s,encoding='utf-8')
+          PY
+
           test -s index.html
           grep -q '^<!doctype html>' index.html
           grep -q 'Informations techniques' index.html
@@ -40,7 +70,7 @@ jobs:
       - name: Publish PDF information fix
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git fetch origin gh-pages:gh-pages
@@ -48,9 +78,9 @@ jobs:
           cp /tmp/crvt-pdf/index.html index.html
           cp /tmp/crvt-pdf/delete-fix.js delete-fix.js
           cat > manifest.json <<'EOF'
-          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=crvt-pdf-info-1","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT."}
+          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=crvt-fixed-final","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT."}
           EOF
           git add -A
-          git diff --cached --quiet && exit 0
-          git commit -m 'Add all CRVT information fields to PDF'
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Finalize CRVT script structure and PDF information'
           git push origin gh-pages
