@@ -17,61 +17,38 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Prepare stable CRVT
-        shell: python
+      - name: Restore known working pre-logo CRVT
+        shell: bash
         run: |
-          from pathlib import Path
-          import re
-
-          src=Path('index-19.html')
-          if not src.exists(): raise SystemExit('Stable CRVT source missing')
-          s=src.read_text(encoding='utf-8')
-
-          # Keep the stable HTML normalization used before the logo integration.
-          s=s.replace('</style>\n</style>\n<style>\n/* V20 — outils pro terrain */','</style>\n<style>\n/* V20 — outils pro terrain */',1)
-          s=s.replace('</style>\r\n</style>\r\n<style>\r\n/* V20 — outils pro terrain */','</style>\r\n<style>\r\n/* V20 — outils pro terrain */',1)
-          s=s.replace('@media print{body{background:#fff}.card{border:0;box-shadow:none}}\n<style id="crvt-v14-quicknav-fixed">','@media print{body{background:#fff}.card{border:0;box-shadow:none}}\n</style>\n<style id="crvt-v14-quicknav-fixed">',1)
-          s=s.replace('</style>\n</style>\n</head>','</style>\n</head>',1)
-
-          # Keep the working IndexedDB deleteAudit implementation and remove any obsolete override.
-          s=re.sub(r'\nfunction deleteAudit\(id\)\{\n  if\(!confirm\("Supprimer définitivement cet audit \?"\)\) return;.*?\n\}\nfunction exportAuditJSON', '\nfunction exportAuditJSON', s, count=1, flags=re.S)
-          s=re.sub(r'\n/\* V1\.29 — historique professionnel \*/.*?/\* ================= V20 — OUTILS PRO TERRAIN ================= \*/', '\n/* ================= V20 — OUTILS PRO TERRAIN ================= */', s, count=1, flags=re.S)
-
-          # Stable audit history naming.
-          old='${esc(x.client||"Sans nom")}'
-          new='${esc("CRVT ENSIO - " + (x.donneur||"Sans donneur") + " X " + (x.client||"Sans nom"))}'
-          if old in s: s=s.replace(old,new,1)
-
-          # Ensure the application header stays the original clean CRVT header.
-          clean_header='<header><h1>CRVT — Compte rendu de visite technique</h1><div class="sub">Audit technique • photos • annotations • légendes • sauvegarde • partage • rapport dynamique</div></header>'
-          s,n=re.subn(r'<header>.*?</header>',clean_header,s,count=1,flags=re.S)
-          if n!=1: raise SystemExit('CRVT header missing')
-
-          out=Path('/tmp/crvt-deploy');out.mkdir(exist_ok=True)
-          (out/'index.html').write_text(s,encoding='utf-8')
+          set -e
+          mkdir -p /tmp/crvt-deploy
+          # This is the last known-good published CRVT build from before the logo work.
+          git show f764b4afbdaafc0aeeb9ae818e701d5bcc114b9c:index.html > /tmp/crvt-deploy/index.html
+          test -s /tmp/crvt-deploy/index.html
+          grep -q '<!doctype html>' /tmp/crvt-deploy/index.html
+          grep -q '</html>' /tmp/crvt-deploy/index.html
+          grep -q 'function deleteAudit' /tmp/crvt-deploy/index.html
 
       - name: Prepare PWA files
         run: |
+          set -e
           git fetch origin gh-pages --depth=1 || true
           git show origin/gh-pages:crvt-icon-192.png > /tmp/crvt-deploy/crvt-icon-192.png 2>/dev/null || true
           git show origin/gh-pages:crvt-icon-512.png > /tmp/crvt-deploy/crvt-icon-512.png 2>/dev/null || true
           cat > /tmp/crvt-deploy/manifest.json <<'EOF'
-          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=stable-prelogo","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT.","icons":[{"src":"crvt-icon-192.png?v=stable-prelogo","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"crvt-icon-512.png?v=stable-prelogo","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
+          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=prelogo-working-1","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT.","icons":[{"src":"crvt-icon-192.png?v=prelogo-working-1","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"crvt-icon-512.png?v=prelogo-working-1","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
           EOF
           cat > /tmp/crvt-deploy/sw.js <<'EOF'
-          const CACHE='crvt-stable-prelogo-v1';const BASE=self.registration.scope;self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll([BASE,'index.html','manifest.json'])).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(CACHE).then(x=>x.put(e.request,c)).catch(()=>{});return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match(BASE))));});
+          const CACHE='crvt-prelogo-working-v1';
+          const BASE=self.registration.scope;
+          self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll([BASE,'index.html?v=prelogo-working-1','manifest.json'])).then(()=>self.skipWaiting())));
+          self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
+          self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(CACHE).then(x=>x.put(e.request,c)).catch(()=>{});return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match(BASE))))});
           EOF
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('/tmp/crvt-deploy/index.html')
-          s=p.read_text(encoding='utf-8')
-          reg="<!-- crvt-pwa-registration -->\n<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?stable-prelogo=1').catch(()=>{}));}</script>\n"
-          if 'crvt-pwa-registration' not in s:s=s.replace('</body>',reg+'</body>',1)
-          p.write_text(s,encoding='utf-8')
-          PY
 
       - name: Publish to gh-pages
         run: |
+          set -e
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git fetch origin gh-pages:gh-pages || true
@@ -81,8 +58,8 @@ jobs:
           cp /tmp/crvt-deploy/sw.js sw.js
           test ! -f /tmp/crvt-deploy/crvt-icon-192.png || cp /tmp/crvt-deploy/crvt-icon-192.png crvt-icon-192.png
           test ! -f /tmp/crvt-deploy/crvt-icon-512.png || cp /tmp/crvt-deploy/crvt-icon-512.png crvt-icon-512.png
-          rm -f crvt-logo.svg
-          git add index.html manifest.json sw.js crvt-icon-192.png crvt-icon-512.png
+          rm -f crvt-logo.svg delete-fix.js
+          git add -A
           git diff --cached --quiet && exit 0
-          git commit -m 'Restore CRVT stable version before logo'
+          git commit -m 'Deploy known working CRVT pre-logo build'
           git push origin gh-pages
