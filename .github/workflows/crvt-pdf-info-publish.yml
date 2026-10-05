@@ -1,0 +1,56 @@
+name: Deploy CRVT PDF info fix
+
+on:
+  workflow_run:
+    workflows: ["Deploy CRVT stable"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-pdf-info:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout CRVT source
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Build PDF information fix from stable pre-logo version
+        shell: bash
+        run: |
+          set -e
+          rm -rf /tmp/crvt-pdf
+          mkdir -p /tmp/crvt-pdf
+          git show f764b4afbdaafc0aeeb9ae818e701d5bcc114b9c:index.html > /tmp/crvt-pdf/index.html
+          cp delete-fix.js /tmp/crvt-pdf/delete-fix.js
+          cp tools/patch_report.py /tmp/crvt-pdf/patch_report.py
+          cd /tmp/crvt-pdf
+          python3 patch_report.py
+          test -s index.html
+          grep -q '^<!doctype html>' index.html
+          grep -q 'Informations techniques' index.html
+          grep -q 'Puissance souscrite' index.html
+          grep -q 'Type de câble' index.html
+          grep -q 'Câble de communication' index.html
+
+      - name: Publish PDF information fix
+        shell: bash
+        run: |
+          set -e
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin gh-pages:gh-pages
+          git checkout gh-pages
+          cp /tmp/crvt-pdf/index.html index.html
+          cp /tmp/crvt-pdf/delete-fix.js delete-fix.js
+          cat > manifest.json <<'EOF'
+          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=crvt-pdf-info-1","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT."}
+          EOF
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m 'Add all CRVT information fields to PDF'
+          git push origin gh-pages
