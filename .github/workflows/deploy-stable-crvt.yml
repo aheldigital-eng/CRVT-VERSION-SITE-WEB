@@ -17,20 +17,41 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Publish the known working pre-logo build
+      - name: Repair and publish the stable pre-logo build
         shell: bash
         run: |
+          set -e
           test -f index-19.html
+          python3 - <<'PY'
+          from pathlib import Path
+
+          src = Path('index-19.html').read_text(encoding='utf-8')
+          marker = '</body></html>'
+          pos = src.find(marker)
+          if pos < 0:
+              raise SystemExit('CRVT HTML closing marker not found')
+
+          tail = src[pos + len(marker):]
+          if 'const overlay=document.createElement("div")' not in tail:
+              raise SystemExit('Expected CRVT report overlay code was not found after HTML')
+
+          # The old build accidentally left the report-overlay JavaScript after </html>,
+          # which made Chrome display the JavaScript as page text. Put that JavaScript
+          # back inside a real script element without changing the application logic.
+          fixed = src[:pos] + '<script>\n' + tail.lstrip() + '\n</script>\n' + marker
+          Path('/tmp/crvt-index.html').write_text(fixed, encoding='utf-8')
+          PY
+
           git fetch origin gh-pages:gh-pages
           git worktree add /tmp/crvt-pages gh-pages
-          cp index-19.html /tmp/crvt-pages/index.html
+          cp /tmp/crvt-index.html /tmp/crvt-pages/index.html
           rm -f /tmp/crvt-pages/sw.js
           cat > /tmp/crvt-pages/noop.txt <<'EOF'
-CRVT stable pre-logo build
+CRVT stable pre-logo build — repaired HTML
 EOF
           cd /tmp/crvt-pages
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html sw.js noop.txt
-          git diff --cached --quiet || git commit -m "Restore stable CRVT pre-logo application"
+          git diff --cached --quiet || git commit -m "Repair CRVT HTML and restore stable build"
           git push origin HEAD:gh-pages
