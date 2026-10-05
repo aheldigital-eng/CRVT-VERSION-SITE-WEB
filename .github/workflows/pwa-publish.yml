@@ -17,17 +17,39 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Restore known working pre-logo CRVT
+      - name: Build the pre-logo CRVT and repair malformed HTML
         shell: bash
         run: |
           set -e
           mkdir -p /tmp/crvt-deploy
-          # This is the last known-good published CRVT build from before the logo work.
           git show f764b4afbdaafc0aeeb9ae818e701d5bcc114b9c:index.html > /tmp/crvt-deploy/index.html
           test -s /tmp/crvt-deploy/index.html
           grep -q '<!doctype html>' /tmp/crvt-deploy/index.html
-          grep -q '</html>' /tmp/crvt-deploy/index.html
           grep -q 'function deleteAudit' /tmp/crvt-deploy/index.html
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('/tmp/crvt-deploy/index.html')
+          src = p.read_text(encoding='utf-8')
+          marker = '</body></html>'
+          pos = src.rfind(marker)
+          if pos < 0:
+              raise SystemExit('Final HTML closing marker not found')
+
+          tail = src[pos + len(marker):]
+          if 'const overlay=document.createElement("div")' not in tail:
+              raise SystemExit('Expected trailing CRVT report code not found')
+
+          # The report overlay JavaScript was accidentally left AFTER </html>.
+          # Chrome therefore displayed that JavaScript as ordinary page text.
+          # Put the existing code back inside a script element; do not change its logic.
+          fixed = src[:pos] + '<script>\n' + tail.lstrip() + '\n</script>\n' + marker + '\n'
+          p.write_text(fixed, encoding='utf-8')
+          PY
+
+          grep -q '<script>' /tmp/crvt-deploy/index.html
+          tail -n 40 /tmp/crvt-deploy/index.html | grep -q '</script>'
 
       - name: Prepare PWA files
         run: |
@@ -36,15 +58,9 @@ jobs:
           git show origin/gh-pages:crvt-icon-192.png > /tmp/crvt-deploy/crvt-icon-192.png 2>/dev/null || true
           git show origin/gh-pages:crvt-icon-512.png > /tmp/crvt-deploy/crvt-icon-512.png 2>/dev/null || true
           cat > /tmp/crvt-deploy/manifest.json <<'EOF'
-          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=prelogo-working-1","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT.","icons":[{"src":"crvt-icon-192.png?v=prelogo-working-1","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"crvt-icon-512.png?v=prelogo-working-1","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
+          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=crvt-fixed","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT.","icons":[{"src":"crvt-icon-192.png?v=crvt-fixed","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"crvt-icon-512.png?v=crvt-fixed","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
           EOF
-          cat > /tmp/crvt-deploy/sw.js <<'EOF'
-          const CACHE='crvt-prelogo-working-v1';
-          const BASE=self.registration.scope;
-          self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll([BASE,'index.html?v=prelogo-working-1','manifest.json'])).then(()=>self.skipWaiting())));
-          self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
-          self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(CACHE).then(x=>x.put(e.request,c)).catch(()=>{});return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match(BASE))))});
-          EOF
+          rm -f /tmp/crvt-deploy/sw.js
 
       - name: Publish to gh-pages
         run: |
@@ -55,11 +71,10 @@ jobs:
           git checkout gh-pages
           cp /tmp/crvt-deploy/index.html index.html
           cp /tmp/crvt-deploy/manifest.json manifest.json
-          cp /tmp/crvt-deploy/sw.js sw.js
+          rm -f sw.js crvt-logo.svg delete-fix.js
           test ! -f /tmp/crvt-deploy/crvt-icon-192.png || cp /tmp/crvt-deploy/crvt-icon-192.png crvt-icon-192.png
           test ! -f /tmp/crvt-deploy/crvt-icon-512.png || cp /tmp/crvt-deploy/crvt-icon-512.png crvt-icon-512.png
-          rm -f crvt-logo.svg delete-fix.js
           git add -A
           git diff --cached --quiet && exit 0
-          git commit -m 'Deploy known working CRVT pre-logo build'
+          git commit -m 'Restore working CRVT HTML and audit deletion'
           git push origin gh-pages
