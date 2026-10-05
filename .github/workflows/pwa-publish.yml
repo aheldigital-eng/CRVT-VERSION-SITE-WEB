@@ -30,6 +30,23 @@ jobs:
           grep -q '</html>' /tmp/crvt-deploy/index.html
           grep -q 'function deleteAudit' /tmp/crvt-deploy/index.html
 
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('/tmp/crvt-deploy/index.html')
+          src = p.read_text(encoding='utf-8')
+          marker = '</body></html>'
+          pos = src.rfind(marker)
+          if pos < 0:
+              raise SystemExit('Final HTML closing marker not found')
+          tail = src[pos + len(marker):]
+          if 'const overlay=document.createElement("div")' in tail:
+              fixed = src[:pos] + '<script>\n' + tail.lstrip() + '\n</script>\n' + marker + '\n'
+              p.write_text(fixed, encoding='utf-8')
+          PY
+
+          grep -q '^<!doctype html>' /tmp/crvt-deploy/index.html
+          grep -q '</html>' /tmp/crvt-deploy/index.html
+
       - name: Prepare PWA files
         shell: bash
         run: |
@@ -38,7 +55,7 @@ jobs:
           git show origin/gh-pages:crvt-icon-192.png > /tmp/crvt-deploy/crvt-icon-192.png 2>/dev/null || true
           git show origin/gh-pages:crvt-icon-512.png > /tmp/crvt-deploy/crvt-icon-512.png 2>/dev/null || true
           cat > /tmp/crvt-deploy/manifest.json <<'EOF'
-          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=prelogo-stable-1","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT.","icons":[{"src":"crvt-icon-192.png?v=prelogo-stable-1","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"crvt-icon-512.png?v=prelogo-stable-1","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
+          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=crvt-fixed-2","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT.","icons":[{"src":"crvt-icon-192.png?v=crvt-fixed-2","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"crvt-icon-512.png?v=crvt-fixed-2","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
           EOF
 
       - name: Publish exact known-good build to gh-pages
@@ -57,5 +74,5 @@ jobs:
           test ! -f /tmp/crvt-deploy/crvt-icon-512.png || cp /tmp/crvt-deploy/crvt-icon-512.png crvt-icon-512.png
           git add -A
           git diff --cached --quiet && exit 0
-          git commit -m 'Restore exact known-good CRVT pre-logo build'
+          git commit -m 'Actually restore working CRVT pre-logo build'
           git push origin gh-pages
