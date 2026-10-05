@@ -19,43 +19,53 @@ jobs:
           fetch-depth: 1
           persist-credentials: true
 
-      - name: Repair visible JavaScript and keep all CRVT features
+      - name: Repair visible JavaScript without removing CRVT features
         shell: python
         run: |
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
 
+          # The broken build leaves the report-overlay JavaScript AFTER
+          # </body></html>. Move that tail back inside a real script element.
+          end_html = s.lower().find('</body></html>')
+          if end_html >= 0:
+              end = end_html + len('</body></html>')
+              tail = s[end:]
+              if 'const oldOverlay=document.getElementById("crvtReportOverlay")' in tail:
+                  marker = 'const oldOverlay=document.getElementById("crvtReportOverlay")'
+                  tail_js = tail[tail.find(marker):].strip()
+                  s = s[:end_html] + '\n<script>\n' + tail_js + '\n</script></body></html>'
+
+          # Also escape any literal closing script tag inside reportHtml.
           marker = 'const reportHtml=`'
           start = s.find(marker)
-          if start < 0:
-              raise SystemExit('CRVT reportHtml marker not found')
-          start += len(marker)
+          if start >= 0:
+              start += len(marker)
+              end = s.find('`;\n// Affichage dans la même page', start)
+              if end < 0:
+                  end = s.find('`;\n', start)
+              if end >= 0:
+                  body = s[start:end]
+                  body = body.replace('</script>', '<\\/script>').replace('</SCRIPT>', '<\\/script>')
+                  s = s[:start] + body + s[end:]
 
-          # Use the end of the report template, not the first random backtick.
-          end = s.find('`;\n// Affichage dans la même page', start)
-          if end < 0:
-              end = s.find('`;\n', start)
-          if end < 0:
-              raise SystemExit('CRVT reportHtml closing marker not found')
+          p.write_text(s, encoding='utf-8')
+          print('CRVT script structure repaired.')
 
-          before = s[:start]
-          body = s[start:end]
-          after = s[end:]
-          repaired = body.replace('</script>', '<\\/script>').replace('</SCRIPT>', '<\\/script>')
-          s2 = before + repaired + after
-
-          # Ensure the deletion repair is loaded after the main CRVT script.
-          marker_body = '</body>'
-          pos = s2.lower().rfind(marker_body)
-          if pos < 0:
-              raise SystemExit('CRVT closing body marker not found')
-          tag = '<script src="delete-fix.js?v=crvt-delete-8"></script>'
-          if 'delete-fix.js?v=crvt-delete-8' not in s2:
-              s2 = s2[:pos] + '\n' + tag + '\n' + s2[pos:]
-
-          p.write_text(s2, encoding='utf-8')
-          print('CRVT gh-pages repaired.')
+      - name: Ensure audit deletion repair is loaded
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          tag = '<script src="delete-fix.js?v=crvt-delete-9"></script>'
+          if 'delete-fix.js?v=crvt-delete-9' not in s:
+              pos = s.lower().rfind('</body>')
+              if pos < 0:
+                  raise SystemExit('Closing body tag not found')
+              s = s[:pos] + '\n' + tag + '\n' + s[pos:]
+              p.write_text(s, encoding='utf-8')
 
       - name: Publish repair
         run: |
@@ -67,5 +77,5 @@ jobs:
             echo 'No CRVT changes required.'
             exit 0
           fi
-          git commit -m 'Repair CRVT visible code and audit deletion'
+          git commit -m 'Repair CRVT script structure and audit deletion'
           git push origin gh-pages
