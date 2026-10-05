@@ -1,0 +1,71 @@
+name: Repair CRVT gh-pages now
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout deployed gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Repair visible JavaScript and keep all CRVT features
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          marker = 'const reportHtml=`'
+          start = s.find(marker)
+          if start < 0:
+              raise SystemExit('CRVT reportHtml marker not found')
+          start += len(marker)
+
+          # Use the end of the report template, not the first random backtick.
+          end = s.find('`;\n// Affichage dans la même page', start)
+          if end < 0:
+              end = s.find('`;\n', start)
+          if end < 0:
+              raise SystemExit('CRVT reportHtml closing marker not found')
+
+          before = s[:start]
+          body = s[start:end]
+          after = s[end:]
+          repaired = body.replace('</script>', '<\\/script>').replace('</SCRIPT>', '<\\/script>')
+          s2 = before + repaired + after
+
+          # Ensure the deletion repair is loaded after the main CRVT script.
+          marker_body = '</body>'
+          pos = s2.lower().rfind(marker_body)
+          if pos < 0:
+              raise SystemExit('CRVT closing body marker not found')
+          tag = '<script src="delete-fix.js?v=crvt-delete-8"></script>'
+          if 'delete-fix.js?v=crvt-delete-8' not in s2:
+              s2 = s2[:pos] + '\n' + tag + '\n' + s2[pos:]
+
+          p.write_text(s2, encoding='utf-8')
+          print('CRVT gh-pages repaired.')
+
+      - name: Publish repair
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if [ -f delete-fix.js ]; then git add delete-fix.js; fi
+          if git diff --cached --quiet; then
+            echo 'No CRVT changes required.'
+            exit 0
+          fi
+          git commit -m 'Repair CRVT visible code and audit deletion'
+          git push origin gh-pages
