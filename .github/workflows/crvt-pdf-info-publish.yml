@@ -31,22 +31,25 @@ jobs:
           cd /tmp/crvt-pdf
           python3 patch_report.py
 
-          # The deployed build had report-overlay JavaScript after </body></html>.
-          # Move that tail back inside a real script element so Chrome cannot
-          # render the JavaScript source as page text.
+          # The deployed build had report-overlay JavaScript after the OUTER
+          # </body></html>. Use rfind so we never touch </body></html> inside
+          # the reportHtml template itself.
           python3 - <<'PY'
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          end_html=s.lower().find('</body></html>')
+
+          outer_close='</body></html>'
+          end_html=s.lower().rfind(outer_close)
           if end_html>=0:
-              end=end_html+len('</body></html>')
+              end=end_html+len(outer_close)
               tail=s[end:]
               marker='const oldOverlay=document.getElementById("crvtReportOverlay")'
               if marker in tail:
                   tail_js=tail[tail.find(marker):].strip()
                   s=s[:end_html]+'\n<script>\n'+tail_js+'\n</script></body></html>'
 
+          # Escape any literal closing script tags inside the report template.
           marker='const reportHtml=`'
           start=s.find(marker)
           if start>=0:
@@ -57,6 +60,7 @@ jobs:
                   body=s[start:end]
                   body=body.replace('</script>','<\\/script>').replace('</SCRIPT>','<\\/script>')
                   s=s[:start]+body+s[end:]
+
           p.write_text(s,encoding='utf-8')
           PY
 
@@ -78,9 +82,9 @@ jobs:
           cp /tmp/crvt-pdf/index.html index.html
           cp /tmp/crvt-pdf/delete-fix.js delete-fix.js
           cat > manifest.json <<'EOF'
-          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=crvt-fixed-final","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT."}
+          {"name":"CRVT — Compte rendu de visite technique","short_name":"CRVT","lang":"fr-FR","start_url":"./index.html?v=crvt-fixed-final-2","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f1f5f9","theme_color":"#0b6e9e","description":"Compte rendu de visite technique CRVT."}
           EOF
           git add -A
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Finalize CRVT script structure and PDF information'
+          git commit -m 'Fix CRVT outer script placement and PDF information'
           git push origin gh-pages
